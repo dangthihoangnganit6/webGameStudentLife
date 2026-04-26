@@ -1,0 +1,6 @@
+[
+  { "id": "credits_15", "name": "15 Tín chỉ", "value": 15 },
+  { "id": "credits_20", "name": "20 Tín chỉ", "value": 20 },
+  { "id": "difficulty_easy", "name": "Dễ", "difficulty": "easy" },
+  { "id": "difficulty_hard", "name": "Khó", "difficulty": "hard" }
+]

@@ -1,26 +1,25 @@
 /**
- * Movement logic utility for testing
+ * Calculates the next position based on key input and map constraints
  * @param {Object} currentPos {x, y}
  * @param {String} key ArrowUp, ArrowDown, etc.
  * @param {Number} speed
- * @param {Array} locations
+ * @param {Object} boundaries {width, height}
  * @returns {Object} {x, y}
  */
-export const movePlayer = (currentPos, key, speed, locations, playerSize = 32) => {
-  let nextX = currentPos.x;
-  let nextY = currentPos.y;
+export const calculateNextMove = (currentPos, key, speed = 5, boundaries = { width: 1200, height: 800 }) => {
+  let { x, y } = currentPos;
 
-  if (key === 'ArrowUp') nextY -= speed;
-  if (key === 'ArrowDown') nextY += speed;
-  if (key === 'ArrowLeft') nextX -= speed;
-  if (key === 'ArrowRight') nextX += speed;
+  if (key === 'ArrowUp' && y > 0) y -= speed;
+  if (key === 'ArrowDown' && y < boundaries.height) y += speed;
+  if (key === 'ArrowLeft' && x > 0) x -= speed;
+  if (key === 'ArrowRight' && x < boundaries.width) x += speed;
 
-  const isColliding = locations.some(loc => (
-    nextX < loc.x + loc.width &&
-    nextX + playerSize > loc.x &&
-    nextY < loc.y + loc.height &&
-    nextY + playerSize > loc.y
-  ));
+  return { x, y };
+};
 
-  return isColliding ? currentPos : { x: nextX, y: nextY };
+/**
+ * Checks distance between two points
+ */
+export const getDistance = (p1, p2) => {
+  return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 };

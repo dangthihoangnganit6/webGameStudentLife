@@ -5,35 +5,60 @@ export const MAP_CONFIG = {
   CHARACTER_SPEED: 4,
 };
 
+export const HOUSING_TYPES = [
+  { id: 'cheap', label: 'Giá rẻ', price: 2000000, energyRecovery: 20, description: 'Phòng nhỏ, chung chủ.' },
+  { id: 'standard', label: 'Bình dân', price: 5000000, energyRecovery: 50, description: 'Phòng khép kín, thoải mái.' },
+  { id: 'premium', label: 'Cao cấp', price: 10000000, energyRecovery: 100, description: 'Chung cư mini, đầy đủ tiện nghi.' }
+];
+
+export const INGREDIENTS = [
+  { id: 'egg', name: 'Trứng', price: 5000, energy: 10, cookTime: 3 },
+  { id: 'meat', name: 'Thịt', price: 50000, energy: 40, cookTime: 8 },
+  { id: 'veggie', name: 'Rau', price: 5000, energy: 12, cookTime: 5 }
+];
+
 export const LOCATIONS = [
-  {
-    id: 'hostel',
-    name: 'Nhà trọ',
-    x: 50,
-    y: 50,
-    width: 120,
-    height: 100,
-    color: '#3b82f6',
-    description: 'Nơi nghỉ ngơi hồi phục năng lượng.',
-  },
   {
     id: 'school',
     name: 'Trường học',
-    x: 500,
-    y: 100,
-    width: 150,
-    height: 120,
-    color: '#8b5cf6',
-    description: 'Nơi học tập để tăng kiến thức.',
+    x: 150,
+    y: 150,
+    color: 'bg-blue-600'
+  },
+  {
+    id: 'home',
+    name: 'Nhà trọ',
+    x: 600,
+    y: 200,
+    color: 'bg-amber-600'
   },
   {
     id: 'work',
-    name: 'Chỗ làm thêm',
-    x: 300,
-    y: 400,
-    width: 140,
-    height: 100,
-    color: '#ef4444',
-    description: 'Nơi kiếm tiền trang trải cuộc sống.',
+    name: 'Làm thêm',
+    x: 400,
+    y: 450,
+    color: 'bg-rose-600'
+  },
+  {
+    id: 'market',
+    name: 'Siêu thị',
+    x: 200,
+    y: 450,
+    color: 'bg-emerald-600'
+  },
+  {
+    id: 'hospital',
+    name: 'Bệnh viện',
+    x: 50,
+    y: 450,
+    color: 'bg-red-600'
+  },
+  {
+    id: 'parents_home',
+    name: 'Nhà (Bố mẹ)',
+    x: 750,
+    y: 450,
+    color: 'bg-emerald-600'
   }
 ];
+

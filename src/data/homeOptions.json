@@ -1,0 +1,5 @@
+[
+  { "id": "room_shared", "name": "Ở ghép", "price": 1000, "annoyanceLevel": 8 },
+  { "id": "room_single", "name": "Phòng đơn", "price": 3000, "annoyanceLevel": 2 },
+  { "id": "room_studio", "name": "Studio cao cấp", "price": 6000, "annoyanceLevel": 0 }
+]
