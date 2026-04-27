@@ -78,26 +78,22 @@ function App() {
   // Periodic Energy Exhaustion Logic (1 unit per 10s)
   useEffect(() => {
     const energyTimer = setInterval(() => {
-      if (stats.energy > 0) {
-        updateStats({ energy: Math.max(0, stats.energy - 1) });
-      }
+      updateStats(prev => ({ energy: Math.max(0, prev.energy - 1) }));
     }, 10000);
 
     return () => clearInterval(energyTimer);
-  }, [stats.energy, updateStats]);
+  }, [updateStats]);
 
   // Homeless Energy Depletion (1 unit per 1s)
   useEffect(() => {
     if (playerStats.rentedRoom) return;
 
     const homelessTimer = setInterval(() => {
-      if (stats.energy > 0) {
-        updateStats({ energy: Math.max(0, stats.energy - 1) });
-      }
+      updateStats(prev => ({ energy: Math.max(0, prev.energy - 1) }));
     }, 1000);
 
     return () => clearInterval(homelessTimer);
-  }, [playerStats.rentedRoom, stats.energy, updateStats]);
+  }, [playerStats.rentedRoom, updateStats]);
 
   // Homeless Notification Logic
   useEffect(() => {

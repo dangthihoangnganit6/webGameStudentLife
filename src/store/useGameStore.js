@@ -59,11 +59,17 @@ const useGameStore = create((set) => ({
   
   // Actions
   updateStats: (newStats) => set((state) => ({
-    stats: { ...state.stats, ...newStats }
+    stats: { 
+      ...state.stats, 
+      ...(typeof newStats === 'function' ? newStats(state.stats) : newStats) 
+    }
   })),
 
   updatePlayerStats: (newStats) => set((state) => ({
-    playerStats: { ...state.playerStats, ...newStats }
+    playerStats: { 
+      ...state.playerStats, 
+      ...(typeof newStats === 'function' ? newStats(state.playerStats) : newStats) 
+    }
   })),
   
   updatePosition: (newPos) => set((state) => {
@@ -138,9 +144,6 @@ const useGameStore = create((set) => ({
         hasClaimedParentSupport: false,
         totalCredits: 0,
         tuitionDue: 0,
-        inventory: [],
-        rentedRoom: null,
-        rentTimer: 0,
         termStartTime: now,
       },
       isClassStarting: false,
