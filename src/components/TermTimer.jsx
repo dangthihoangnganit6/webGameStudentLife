@@ -24,7 +24,7 @@ const TermTimer = ({ timeLeft, isEnrolled }) => {
         <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
           <div 
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
-            style={{ width: `${(timeLeft / (30 * 60)) * 100}%` }}
+            style={{ width: `${(timeLeft / 300) * 100}%` }}
           />
         </div>
       </div>

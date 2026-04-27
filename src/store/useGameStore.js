@@ -29,6 +29,8 @@ const useGameStore = create((set) => ({
     termStartTime: null,
     allowanceAccumulator: 0,
     distanceCounter: 0,
+    hospitalCount: 0,
+    isStroke: false,
   },
   
   isCooking: false,
@@ -36,6 +38,9 @@ const useGameStore = create((set) => ({
   
   isSleeping: false,
   sleepProgress: 0,
+  
+  isHospitalized: false,
+  hospitalizationProgress: 0,
   
   // School logic state
   isClassStarting: false,
@@ -117,29 +122,34 @@ const useGameStore = create((set) => ({
     playerStats: { ...state.playerStats, attendanceCount: state.playerStats.attendanceCount + 1 }
   })),
 
-  resetSchoolData: () => set((state) => ({
-    playerStats: {
-      ...state.playerStats,
-      credits: 0,
-      attendanceCount: 0,
-      missedClasses: 0,
-      isDroppedOut: false,
-      isEnrolled: false,
-      isPaid: false,
-      pendingParentSupport: false,
-      hasClaimedParentSupport: false,
-      totalCredits: 0,
-      tuitionDue: 0,
-      inventory: [],
-      rentedRoom: null,
-      rentTimer: 0,
-    },
-    isClassStarting: false,
-    nextClassTimer: 0,
-    checkInWindow: 0,
-    isCooking: false,
-    cookingProgress: 0
-  })),
+  resetSchoolData: () => {
+    const now = Date.now();
+    localStorage.setItem('termStartTime', now);
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        credits: 0,
+        attendanceCount: 0,
+        missedClasses: 0,
+        isDroppedOut: false,
+        isEnrolled: false,
+        isPaid: false,
+        pendingParentSupport: false,
+        hasClaimedParentSupport: false,
+        totalCredits: 0,
+        tuitionDue: 0,
+        inventory: [],
+        rentedRoom: null,
+        rentTimer: 0,
+        termStartTime: now,
+      },
+      isClassStarting: false,
+      nextClassTimer: 0,
+      checkInWindow: 0,
+      isCooking: false,
+      cookingProgress: 0
+    }));
+  },
 
   resetGame: () => {
     localStorage.removeItem('termStartTime');
@@ -169,12 +179,19 @@ const useGameStore = create((set) => ({
         isExpelled: false,
         termStartTime: Date.now(),
         allowanceAccumulator: 0,
+        distanceCounter: 0,
+        hospitalCount: 0,
+        isStroke: false,
       },
       isClassStarting: false,
       nextClassTimer: 0,
       checkInWindow: 0,
       isCooking: false,
       cookingProgress: 0,
+      isSleeping: false,
+      sleepProgress: 0,
+      isHospitalized: false,
+      hospitalizationProgress: 0,
       position: { x: 250, y: 250 },
       direction: 'down',
       currentScene: 'map',
@@ -190,6 +207,9 @@ const useGameStore = create((set) => ({
   
   setSleeping: (sleeping) => set({ isSleeping: sleeping }),
   setSleepProgress: (progress) => set({ sleepProgress: progress }),
+  
+  setHospitalized: (hospitalized) => set({ isHospitalized: hospitalized }),
+  setHospitalizationProgress: (progress) => set({ hospitalizationProgress: progress }),
   
   addToInventory: (item) => set((state) => ({
     playerStats: {

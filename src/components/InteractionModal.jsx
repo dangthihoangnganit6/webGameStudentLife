@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, GraduationCap, CheckCircle, Wallet, Heart, User, Store, Home, Utensils, ShoppingBag } from 'lucide-react';
+import { X, GraduationCap, CheckCircle, Wallet, Heart, User, Store, Home, Utensils, ShoppingBag, Briefcase } from 'lucide-react';
 import { HOUSING_TYPES, INGREDIENTS } from '../game/constants';
+import workOptions from '../data/workOptions.json';
 
 const InteractionModal = ({ 
   location, 
@@ -38,6 +39,36 @@ const InteractionModal = ({
             >
               Không
             </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (interactionStep === 'confirm_low_energy_study') {
+      return (
+        <div className="text-center space-y-8">
+          <div className="bg-amber-500/10 p-6 rounded-2xl border-2 border-amber-500/30">
+            <p className="text-amber-500 font-black text-lg leading-tight uppercase italic">
+              "Bạn đang kiệt sức, không nên tiếp tục học, hãy nghỉ ngơi đã"
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <p className="text-white text-xl font-bold tracking-tight">Bạn có muốn học không?</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => onAction('check_in')}
+                className="py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl transition-all shadow-xl shadow-emerald-500/20 active:scale-95 uppercase tracking-widest"
+              >
+                Có
+              </button>
+              <button 
+                onClick={() => setInteractionStep('sub_menu')}
+                className="py-5 bg-slate-800 hover:bg-slate-700 text-slate-400 font-black rounded-2xl transition-all active:scale-95 uppercase tracking-widest"
+              >
+                Không
+              </button>
+            </div>
           </div>
         </div>
       );
@@ -127,7 +158,13 @@ const InteractionModal = ({
 
             <button 
               disabled={!isClassStarting}
-              onClick={() => onAction('check_in')}
+              onClick={() => {
+                if (stats.energy <= 25) {
+                  setInteractionStep('confirm_low_energy_study');
+                } else {
+                  onAction('check_in');
+                }
+              }}
               className={`w-full py-5 rounded-2xl font-black text-xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 ${
                 isClassStarting 
                 ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-emerald-500/20' 
@@ -360,6 +397,39 @@ const InteractionModal = ({
           </button>
           
           <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors">Rời đi</button>
+        </div>
+      );
+    }
+
+    // --- LOGIC LÀM VIÊC ---
+    if (location.id === 'work') {
+      return (
+        <div className="space-y-6">
+           <div className="bg-rose-950/20 p-6 rounded-2xl border border-rose-500/20 text-center">
+            <Briefcase className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h3 className="text-white font-black text-xl uppercase italic">Việc làm thêm</h3>
+            <p className="text-slate-400 text-xs mt-1">Kiếm thêm thu nhập để trang trải cuộc sống.</p>
+          </div>
+
+          <div className="space-y-3">
+            {workOptions.map(job => (
+              <button
+                key={job.id}
+                onClick={() => onAction('work', job)}
+                className="w-full p-4 bg-slate-800/50 hover:bg-rose-600 group rounded-2xl border border-white/5 transition-all text-left flex justify-between items-center"
+              >
+                <div>
+                  <div className="text-white font-bold group-hover:text-white">{job.name}</div>
+                  <div className="text-[10px] text-slate-500 group-hover:text-rose-200 uppercase">
+                    Tiêu tốn: {job.exhaustion} Năng lượng
+                  </div>
+                </div>
+                <div className="text-emerald-400 font-black text-xl group-hover:text-white">+{job.income.toLocaleString()}đ</div>
+              </button>
+            ))}
+          </div>
+          
+          <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors border-t border-white/5 pt-6">Rời đi</button>
         </div>
       );
     }

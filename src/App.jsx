@@ -8,9 +8,10 @@ import InteractionModal from './components/InteractionModal';
 import AttendanceTimer from './components/AttendanceTimer';
 import CookingOverlay from './components/CookingOverlay';
 import SleepOverlay from './components/SleepOverlay';
+import HospitalOverlay from './components/HospitalOverlay';
 import TermTimer from './components/TermTimer';
 import GameOver from './components/GameOver';
-import { X } from 'lucide-react';
+import { X, Activity } from 'lucide-react';
 
 function App() {
   const { 
@@ -25,6 +26,7 @@ function App() {
     isClassStarting, setClassStatus, nextClassTimer, checkInWindow, updateTimers, incrementMissed, incrementAttendance,
     isCooking, setCooking, cookingProgress, setCookingProgress, addToInventory, removeFromInventory, payRent,
     isSleeping, setSleeping, sleepProgress, setSleepProgress, 
+    isHospitalized, setHospitalized, hospitalizationProgress, setHospitalizationProgress,
     resetGame
   } = useGameStore();
  
@@ -40,7 +42,7 @@ function App() {
 
   const keys = useKeyboard();
   const [showPrompt, setShowPrompt] = useState(null);
-  const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(30 * 60);
+  const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(5 * 60);
 
   // Term Sync & Expulsion Logic
   useEffect(() => {
@@ -54,20 +56,24 @@ function App() {
     }
 
     const termTimer = setInterval(() => {
+      if (playerStats.isPaid) {
+        clearInterval(termTimer);
+        return;
+      }
       const startValue = playerStats.termStartTime || parseInt(startTime);
       const now = Date.now();
       const elapsed = (now - startValue) / 1000; // in seconds
-      const remaining = Math.max(0, (30 * 60) - elapsed);
+      const remaining = Math.max(0, 300 - elapsed);
       setTimeLeftToEnroll(remaining);
 
-      if (remaining <= 0 && !playerStats.isEnrolled) {
+      if (remaining <= 0 && !playerStats.isPaid) {
         updatePlayerStats({ isExpelled: true });
         clearInterval(termTimer);
       }
     }, 1000);
 
     return () => clearInterval(termTimer);
-  }, [playerStats.isEnrolled, playerStats.termStartTime, updatePlayerStats]);
+  }, [playerStats.isEnrolled, playerStats.isPaid, playerStats.termStartTime, updatePlayerStats]);
 
   // Periodic Energy Exhaustion Logic (1 unit per 10s)
   useEffect(() => {
@@ -105,21 +111,44 @@ function App() {
     return () => clearInterval(interval);
   }, [playerStats.rentedRoom, notify]);
 
-  // Energy Status Monitoring
+  // Energy Status Monitoring & Fainting
   const [lastWarningTime, setLastWarningTime] = useState(0);
   useEffect(() => {
-    if (stats.energy <= 0) {
-      notify("Bạn đã quá kiệt sức và ngất xỉu! Bạn được đưa vào Bệnh viện.");
-      updatePosition({ x: 50, y: 450 }); // Hospital coordinates
-      updateStats({ energy: 20 }); // Give some energy back so they can move
-    } else if (stats.energy <= 20) {
+    if (stats.energy <= 0 && !isHospitalized) {
+      const newCount = playerStats.hospitalCount + 1;
+      
+      if (newCount >= 3) {
+        updatePlayerStats({ isStroke: true });
+      } else {
+        notify(`Bạn đã ngất xỉu lần ${newCount}! Bạn được đưa vào Bệnh viện điều trị cưỡng chế.`);
+        updatePlayerStats({ hospitalCount: newCount });
+        setHospitalized(true);
+        setHospitalizationProgress(0);
+        updatePosition({ x: 50, y: 450 }); // Hospital coordinates
+
+        const therapyTime = 60; // 1 minute as requested
+        let therapyCurrent = 0;
+        const hospitalInterval = setInterval(() => {
+          therapyCurrent += 1;
+          const prog = (therapyCurrent / therapyTime) * 100;
+          if (prog >= 100) {
+            clearInterval(hospitalInterval);
+            setHospitalized(false);
+            updateStats({ energy: 30 });
+            notify("Điều trị thành công! (+30 Energy)");
+          } else {
+            setHospitalizationProgress(prog);
+          }
+        }, 1000);
+      }
+    } else if (stats.energy <= 20 && !isHospitalized) {
       const now = Date.now();
       if (now - lastWarningTime > 30000) { // Warn every 30s
         notify("Bạn quá mệt, hãy về phòng nấu ăn hoặc nghỉ ngơi!");
         setLastWarningTime(now);
       }
     }
-  }, [stats.energy, updatePosition, updateStats, lastWarningTime, notify]);
+  }, [stats.energy, isHospitalized, playerStats.hospitalCount, updatePlayerStats, setHospitalized, setHospitalizationProgress, updatePosition, updateStats, lastWarningTime, notify]);
 
   // Allowance Loop Logic
   useEffect(() => {
@@ -147,7 +176,7 @@ function App() {
       const state = useGameStore.getState();
       const currentKeys = keys; // keys state is fine since it's updated via listeners
 
-      if (state.isModalOpen || state.isCooking || state.isSleeping || state.playerStats.isExpelled || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
 
       let moveKey = null;
       if (currentKeys.ArrowUp) moveKey = 'ArrowUp';
@@ -170,7 +199,7 @@ function App() {
         });
 
         if (nearby) {
-          if (!state.isModalOpen && showPrompt?.id !== nearby.id) {
+          if (!state.isModalOpen && showPrompt?.id !== nearby.id && !state.isHospitalized) {
             openModal(nearby);
             setShowPrompt(nearby);
           }
@@ -245,8 +274,7 @@ function App() {
       notify("CHÚC MỪNG: Bạn đã hoàn thành kỳ học xuất sắc!");
       resetSchoolData();
     } else if (playerStats.missedClasses >= 3) {
-      notify("CẢNH BÁO: Bạn đã bị thôi học do vắng quá nhiều!");
-      resetSchoolData();
+      updatePlayerStats({ isExpelled: true, expulsionReason: 'attendance' });
     }
   }, [playerStats.attendanceCount, playerStats.missedClasses, playerStats.totalCredits, playerStats.isEnrolled, resetSchoolData]);
 
@@ -362,6 +390,15 @@ function App() {
           }
         }, 100);
         break;
+      case 'work':
+        if (stats.energy >= data.exhaustion) {
+          updateStats({ money: stats.money + data.income, energy: stats.energy - data.exhaustion });
+          notify(`Bạn đã làm việc ${data.name} và nhận được ${data.income.toLocaleString()}đ!`);
+          closeModal();
+        } else {
+          notify("Bạn quá mệt để làm việc này!");
+        }
+        break;
       default:
         break;
     }
@@ -378,14 +415,34 @@ function App() {
         />
       )}
 
-      {!playerStats.isEnrolled && (
-        <TermTimer timeLeft={timeLeftToEnroll} isEnrolled={playerStats.isEnrolled} />
+      {!playerStats.isPaid && (
+        <TermTimer timeLeft={timeLeftToEnroll} isEnrolled={playerStats.isPaid} />
       )}
 
-      {playerStats.isExpelled && <GameOver onReset={resetGame} />}
+      {playerStats.isExpelled && (
+        <GameOver 
+          onReset={resetGame} 
+          type="expelled"
+          title="Bạn đã bị đuổi học"
+          message={playerStats.expulsionReason === 'attendance' 
+            ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!" 
+            : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
+          }
+        />
+      )}
+      
+      {playerStats.isStroke && (
+        <GameOver 
+          onReset={resetGame} 
+          type="stroke"
+          title="Đột quỵ không qua khỏi"
+          message="Vì kiệt sức và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!" 
+        />
+      )}
 
       {isCooking && <CookingOverlay progress={cookingProgress} />}
       {isSleeping && <SleepOverlay progress={sleepProgress} />}
+      {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
 
       {/* HUD Header */}
       <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-50 pointer-events-none">
