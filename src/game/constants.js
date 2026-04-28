@@ -51,7 +51,7 @@ export const LOCATIONS = [
     name: 'Bệnh viện',
     image: 'hospital.png',
     display: { x: 158.72, y: 59.44, rotation: 0, w: 412.02, h: 367.63 },
-    interaction: { x: 394.65, y: 300.77, rotation: 30, w: 91.58, h: 46.69 }
+    interaction: { x: 343, y: 245.79, rotation: 30, w: 134.13, h: 94.16 }
   },
   {
     id: 'parents_home',

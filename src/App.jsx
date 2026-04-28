@@ -606,7 +606,7 @@ function App() {
 
       {/* World Map */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 z-10 isolate"
         style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
         onClick={(e) => {
            // Cập nhật tọa độ Click theo yêu cầu của tỷ lệ scaleFactor
@@ -622,26 +622,39 @@ function App() {
           src={pathImage} 
           alt="Map Base" 
           className="absolute top-0 left-0" 
-          style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT, objectFit: 'cover' }} 
+          style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT, objectFit: 'cover', zIndex: 0 }} 
         />
         
         {LOCATIONS.map(loc => {
            const d = loc.display;
-           // Nếu rotation = 180 thì lật ngang (theo yêu cầu scale.x = -1 của User)
            const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
+
+           // Y-Sorting và Xử lý che khuất (Thu hẹp viền cho Map chéo)
+           const buildingBaseY = loc.interaction.y || (d.y + d.h);
+           const playerFeetX = position.x + 10;
+           const playerFeetY = position.y + 50;
+
+           const isOccluded = 
+             playerFeetX > d.x + d.w * 0.15 && 
+             playerFeetX < d.x + d.w * 0.85 && 
+             playerFeetY > d.y + d.h * 0.1 && 
+             playerFeetY <= buildingBaseY;
+
            return (
             <img
               key={loc.id}
               src={IMAGE_MAP[loc.image]}
               alt={loc.name}
-              className="absolute"
+              className="absolute transition-opacity duration-300 ease-in-out"
               style={{
                 left: d.x,
                 top: d.y,
                 width: d.w,
                 height: d.h,
                 transform: tFlip,
-                transformOrigin: 'center'
+                transformOrigin: 'center',
+                zIndex: Math.floor(buildingBaseY),
+                opacity: isOccluded ? 0.5 : 1
               }}
             />
           );
@@ -649,8 +662,11 @@ function App() {
 
         {/* Player */}
         <div
-          className="absolute z-20 overflow-visible flex items-end justify-center drop-shadow-2xl"
-          style={{ width: 20, height: 50, left: position.x, top: position.y }}
+          className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
+          style={{ 
+            width: 20, height: 50, left: position.x, top: position.y, 
+            zIndex: Math.floor(position.y + 50) 
+          }}
         >
           {/* Bóng đổ (Shadow) dưới chân nhân vật */}
           <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
@@ -680,9 +696,9 @@ function App() {
       </div>
 
       {/* Notifications */}
-      <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[1000] w-full max-w-md">
+      <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
         {notifications.map(n => (
-          <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500">
+          <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
              <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
              <button 
               onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
