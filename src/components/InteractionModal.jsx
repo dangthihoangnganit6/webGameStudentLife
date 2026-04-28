@@ -325,6 +325,31 @@ const InteractionModal = ({
               NGỦ (30S)
             </button>
           </div>
+
+          {(playerStats.electricityBill.status === 'pending' || playerStats.electricityBill.status === 'overdue') && (
+            <div className="bg-amber-950/20 p-5 rounded-2xl border-2 border-amber-500/30">
+               <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <div className="text-[10px] uppercase font-black text-amber-500/60 mb-0.5">Tiền điện {playerStats.electricityBill.status === 'overdue' ? '(Quá hạn)' : ''}</div>
+                    <div className="text-xl font-black text-white">{playerStats.electricityBill.amount.toLocaleString()}đ</div>
+                  </div>
+                  <button
+                    disabled={stats.money < playerStats.electricityBill.amount}
+                    onClick={() => onAction('pay_electricity_bill')}
+                    className={`px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+                      stats.money >= playerStats.electricityBill.amount 
+                      ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-lg shadow-amber-500/20' 
+                      : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    }`}
+                  >
+                    Thanh toán
+                  </button>
+               </div>
+               {playerStats.electricityBill.status === 'overdue' && (
+                 <p className="text-[10px] text-rose-400 font-bold animate-pulse">CƯỠNG CHẾ: Hệ thống đang bị quá tải, năng lượng giảm liên tục!</p>
+               )}
+            </div>
+          )}
           
           <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors border-t border-white/5 pt-6">Rời phòng</button>
         </div>
@@ -443,19 +468,19 @@ const InteractionModal = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[1000] flex items-center justify-center p-4 ${location.id !== 'market' ? 'bg-slate-950/80 backdrop-blur-sm' : ''}`}>
+    <div className={`fixed inset-0 z-[1000] flex items-center justify-center p-8 ${location.id !== 'market' ? 'bg-slate-950/85 backdrop-blur-md' : ''}`}>
       <div 
-        className="w-full max-w-lg bg-slate-900 border-2 border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200"
+        className="w-full max-w-3xl bg-slate-950 border-[3px] border-white/10 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-          <span className="text-[10px] font-black uppercase text-indigo-400 tracking-[0.2em]">{location.id} module</span>
-          <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors">
-            <X className="w-4 h-4 text-slate-500" />
+        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+          <span className="text-xs font-black uppercase text-indigo-400 tracking-[0.3em]">{location.id} module</span>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            <X className="w-6 h-6 text-slate-500" />
           </button>
         </div>
         
-        <div className="p-8">
+        <div className="p-12">
           {renderContent()}
         </div>
       </div>

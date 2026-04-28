@@ -9,15 +9,15 @@ const CookingOverlay = ({ progress }) => {
         <Utensils className="w-24 h-24 text-orange-500 relative z-10" />
       </div>
 
-      <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Đang nấu ăn...</h2>
-      <p className="text-slate-400 mb-12 max-w-sm">Vui lòng đợi trong giây lát, mùi hương thật tuyệt vời!</p>
+      <h2 className="text-6xl font-black text-white mb-4 uppercase italic tracking-tighter">Đang nấu ăn...</h2>
+      <p className="text-slate-400 text-2xl mb-16 max-w-2xl">Vui lòng đợi trong giây lát, mùi hương thật tuyệt vời!</p>
 
-      <div className="w-full max-w-md bg-slate-800 h-6 rounded-full overflow-hidden border-2 border-white/10 shadow-2xl">
+      <div className="w-full max-w-3xl bg-slate-800 h-10 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl">
         <div 
-          className="h-full bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 transition-all duration-100 ease-linear flex items-center justify-end px-3"
+          className="h-full bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 transition-all duration-100 ease-linear flex items-center justify-end px-5"
           style={{ width: `${progress}%` }}
         >
-           <span className="text-[10px] font-black text-white mix-blend-overlay uppercase tracking-widest">{Math.round(progress)}%</span>
+           <span className="text-sm font-black text-white mix-blend-overlay uppercase tracking-widest">{Math.round(progress)}%</span>
         </div>
       </div>
       

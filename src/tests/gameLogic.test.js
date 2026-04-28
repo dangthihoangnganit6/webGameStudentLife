@@ -9,18 +9,16 @@ describe('Movement & Collision Logic', () => {
   it('should move character down when direction is down', () => {
     // Starting at 200, 200 (Empty space)
     const initialPos = { x: 200, y: 200 };
-    const { newPos, collision } = calculateNextMove(initialPos, 'down', speed, charSize);
+    const newPos = calculateNextMove(initialPos, 'ArrowDown', speed);
     
     expect(newPos).toEqual({ x: 200, y: 204 });
-    expect(collision).toBe(false);
   });
 
   it('should not move out of top boundary', () => {
     const initialPos = { x: 200, y: 0 };
-    const { newPos, collision } = calculateNextMove(initialPos, 'up', speed, charSize);
+    const newPos = calculateNextMove(initialPos, 'ArrowUp', speed);
     
     expect(newPos).toEqual(initialPos);
-    expect(collision).toBe(true);
   });
 
   it('should stop move when colliding with a location (e.g. Hostel at 50,50)', () => {
@@ -28,17 +26,15 @@ describe('Movement & Collision Logic', () => {
     // Character is at 170 + 2 (slightly to the right of hostel)
     // Moving left should collide
     const initialPos = { x: 171, y: 60 }; 
-    const { newPos, collision } = calculateNextMove(initialPos, 'left', speed, charSize);
+    const newPos = calculateNextMove(initialPos, 'ArrowLeft', speed);
     
     expect(newPos).toEqual(initialPos);
-    expect(collision).toBe(true);
   });
 
   it('should move freely when no obstacles are present', () => {
     const initialPos = { x: 400, y: 300 }; // Empty space
-    const { newPos, collision } = calculateNextMove(initialPos, 'right', speed, charSize);
+    const newPos = calculateNextMove(initialPos, 'ArrowRight', speed);
     
     expect(newPos).toEqual({ x: 404, y: 300 });
-    expect(collision).toBe(false);
   });
 });

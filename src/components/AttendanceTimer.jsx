@@ -4,7 +4,7 @@ import { Calendar, AlertCircle } from 'lucide-react';
 const AttendanceTimer = ({ nextClassTimer, checkInWindow, isClassStarting, playerStats }) => {
   if (playerStats.isDroppedOut) {
     return (
-      <div className="fixed bottom-24 right-6 glass-morphism p-4 border-2 border-red-500/50 bg-red-950/20 text-red-400 z-40 flex items-center gap-3 animate-pulse">
+      <div className="w-full glass-morphism p-4 border-2 border-red-500/50 bg-red-950/20 text-red-400 flex items-center gap-3 animate-pulse">
         <AlertCircle className="w-6 h-6" />
         <div>
           <div className="text-[10px] font-black uppercase tracking-tighter">TRẠNG THÁI</div>
@@ -21,7 +21,7 @@ const AttendanceTimer = ({ nextClassTimer, checkInWindow, isClassStarting, playe
   };
 
   return (
-    <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-40 items-end">
+    <div className="w-full flex flex-col gap-3">
       {isClassStarting && (
         <div className="glass-morphism p-4 border-2 border-indigo-500 bg-indigo-950/30 text-white animate-bounce">
           <div className="flex items-center gap-2">
@@ -32,7 +32,7 @@ const AttendanceTimer = ({ nextClassTimer, checkInWindow, isClassStarting, playe
         </div>
       )}
 
-      <div className="glass-morphism p-4 text-slate-800 border-white/20">
+      <div className="glass-morphism p-4 text-white border-white/20">
         <div className="flex items-center gap-3">
           <Calendar className="w-5 h-5 text-indigo-600" />
           <div>

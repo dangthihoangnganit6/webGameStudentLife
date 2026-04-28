@@ -8,7 +8,7 @@ const TermTimer = ({ timeLeft, isEnrolled }) => {
   const s = Math.floor(timeLeft % 60);
 
   return (
-    <div className="fixed top-24 left-6 z-[100] animate-in slide-in-from-left duration-500">
+    <div className="w-full animate-in slide-in-from-left duration-500">
       <div className="glass-morphism px-6 py-4 border-2 border-red-500/30 bg-red-950/20 shadow-2xl shadow-red-500/10">
         <div className="flex items-center gap-4">
           <div className="bg-red-600 p-2 rounded-lg animate-pulse">

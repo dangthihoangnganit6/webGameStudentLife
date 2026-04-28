@@ -6,24 +6,24 @@ const HospitalOverlay = ({ progress }) => {
     <div className="fixed inset-0 z-[10000] bg-white/90 backdrop-blur-2xl flex items-center justify-center p-6 text-slate-900">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.1)_0%,transparent_70%)] animate-pulse"></div>
       
-      <div className="max-w-md w-full text-center relative z-10">
-        <div className="mb-8 inline-flex p-6 bg-red-500/10 rounded-full border-2 border-red-500/20 shadow-2xl animate-pulse">
-          <Activity className="w-16 h-16 text-red-600" />
+      <div className="max-w-2xl w-full text-center relative z-10">
+        <div className="mb-10 inline-flex p-10 bg-red-500/10 rounded-full border-[3px] border-red-500/20 shadow-2xl animate-pulse">
+          <Activity className="w-24 h-24 text-red-600" />
         </div>
         
-        <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Đang được điều trị</h2>
-        <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px] mb-12">Hệ thống đang phục hồi năng lượng</p>
+        <h2 className="text-6xl font-black uppercase italic tracking-tighter mb-4">Đang được điều trị</h2>
+        <p className="text-slate-500 font-bold uppercase tracking-[0.5em] text-xl mb-16">Hệ thống đang phục hồi năng lượng</p>
         
-        <div className="bg-slate-100 p-8 rounded-[40px] shadow-inner border border-slate-200">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <HeartPulse className="w-5 h-5 text-red-500 animate-bounce" />
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Tình trạng phục hồi</span>
+        <div className="bg-slate-100 p-12 rounded-[56px] shadow-inner border-2 border-slate-200">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <HeartPulse className="w-8 h-8 text-red-500 animate-bounce" />
+              <span className="text-xs font-black uppercase text-slate-400 tracking-widest">Tình trạng phục hồi</span>
             </div>
-            <span className="text-2xl font-black text-slate-800">{Math.round(progress)}%</span>
+            <span className="text-4xl font-black text-slate-800 tabular-nums">{Math.round(progress)}%</span>
           </div>
           
-          <div className="h-6 w-full bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-lg p-1">
+          <div className="h-10 w-full bg-slate-200 rounded-full overflow-hidden border-4 border-white shadow-lg p-1.5 font-bold tracking-widest text-lg">
              <div 
               className="h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-300 relative overflow-hidden"
               style={{ width: `${progress}%` }}
@@ -33,7 +33,7 @@ const HospitalOverlay = ({ progress }) => {
           </div>
         </div>
         
-        <p className="mt-8 text-slate-400 text-xs italic">"Hãy nghỉ ngơi thật tốt, sức khỏe là vàng!"</p>
+        <p className="mt-12 text-slate-400 text-xl italic font-medium">"Hãy nghỉ ngơi thật tốt, sức khỏe là vàng!"</p>
       </div>
     </div>
   );

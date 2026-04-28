@@ -31,6 +31,11 @@ const useGameStore = create((set) => ({
     distanceCounter: 0,
     hospitalCount: 0,
     isStroke: false,
+    electricityBill: {
+      amount: 0,
+      status: 'none', // 'none' | 'pending' | 'overdue' | 'paid'
+      timeLeftToPay: 0,
+    }
   },
   
   isCooking: false,
@@ -80,9 +85,9 @@ const useGameStore = create((set) => ({
     let newDistanceCounter = state.playerStats.distanceCounter + distance;
     let newEnergy = state.stats.energy;
 
-    if (newDistanceCounter >= 100) {
-      newEnergy = Math.max(0, newEnergy - 2);
-      newDistanceCounter -= 100;
+    if (newDistanceCounter >= 200) {
+      newEnergy = Math.max(0, newEnergy - 1);
+      newDistanceCounter -= 200;
     }
 
     return { 
@@ -145,12 +150,13 @@ const useGameStore = create((set) => ({
         totalCredits: 0,
         tuitionDue: 0,
         termStartTime: now,
+        electricityBill: { amount: 0, status: 'none', timeLeftToPay: 0 }
       },
       isClassStarting: false,
       nextClassTimer: 0,
       checkInWindow: 0,
       isCooking: false,
-      cookingProgress: 0
+      cookingProgress: 0,
     }));
   },
 
@@ -185,6 +191,11 @@ const useGameStore = create((set) => ({
         distanceCounter: 0,
         hospitalCount: 0,
         isStroke: false,
+        electricityBill: {
+          amount: 0,
+          status: 'none',
+          timeLeftToPay: 0,
+        }
       },
       isClassStarting: false,
       nextClassTimer: 0,
@@ -258,6 +269,45 @@ const useGameStore = create((set) => ({
         time: { day, hour, minute }
       }
     };
+  }),
+
+  generateElectricityBill: (amount) => set((state) => ({
+    playerStats: {
+      ...state.playerStats,
+      electricityBill: { amount, status: 'pending', timeLeftToPay: 60 }
+    }
+  })),
+
+  payElectricityBill: () => set((state) => {
+    const { electricityBill } = state.playerStats;
+    if (state.stats.money >= electricityBill.amount) {
+      return {
+        stats: { ...state.stats, money: state.stats.money - electricityBill.amount },
+        playerStats: {
+          ...state.playerStats,
+          electricityBill: { ...electricityBill, status: 'paid' }
+        }
+      };
+    }
+    return {};
+  }),
+
+  updateElectricityTimer: () => set((state) => {
+    const { electricityBill } = state.playerStats;
+    if (electricityBill.status === 'pending') {
+      const nextTime = Math.max(0, electricityBill.timeLeftToPay - 1);
+      return {
+        playerStats: {
+          ...state.playerStats,
+          electricityBill: { 
+            ...electricityBill, 
+            timeLeftToPay: nextTime,
+            status: nextTime === 0 ? 'overdue' : 'pending'
+          }
+        }
+      };
+    }
+    return {};
   }),
 }));
 
