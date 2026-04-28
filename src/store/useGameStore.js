@@ -53,7 +53,7 @@ const useGameStore = create((set) => ({
   checkInWindow: 0,
   
   // Character state
-  position: { x: 250, y: 250 },
+  position: { x: 1114, y: 864 },
   direction: 'down',
   
   // Game state
@@ -206,7 +206,7 @@ const useGameStore = create((set) => ({
       sleepProgress: 0,
       isHospitalized: false,
       hospitalizationProgress: 0,
-      position: { x: 250, y: 250 },
+      position: { x: 1114, y: 864 },
       direction: 'down',
       currentScene: 'map',
       isModalOpen: false,

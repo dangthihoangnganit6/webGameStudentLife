@@ -33,9 +33,17 @@ export const calculateNextMove = (currentPos, key, speed = 5, boundaries = { wid
   let newX = currentPos.x + iso_dx;
   let newY = currentPos.y + iso_dy;
 
-  // Chặn ranh giới bản đồ
-  newX = Math.max(0, Math.min(newX, boundaries.width));
-  newY = Math.max(0, Math.min(newY, boundaries.height));
+  // Chặn ranh giới bản đồ: Đứng yên hoàn toàn nếu bước tiếp theo ra khỏi viền (Không trượt)
+  const CHAR_W = 20;
+  const CHAR_H = 50;
+  if (
+    newX < 0 || 
+    newX > boundaries.width - CHAR_W || 
+    newY < 0 || 
+    newY > boundaries.height - CHAR_H
+  ) {
+    return currentPos;
+  }
 
   return { x: newX, y: newY };
 };

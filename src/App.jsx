@@ -21,6 +21,8 @@ import apartmentImage from './assets/apartment.png';
 import supermarketImage from './assets/supermarket.png';
 import homeImage from './assets/home.png';
 import jobCenterImage from './assets/job_center.png';
+import spriteUpImage from './assets/sprite_up.png';
+import spriteRightImage from './assets/sprite_right.png';
 
 const IMAGE_MAP = {
   'hospital.png': hospitalImage,
@@ -78,6 +80,21 @@ function App() {
   const [showPrompt, setShowPrompt] = useState(null);
   const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(5 * 60);
   const [showExhaustedPopup, setShowExhaustedPopup] = useState(false);
+
+  // Sprite Animation State
+  const isMoving = !!(keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    if (!isMoving) {
+      setFrame(0);
+      return;
+    }
+    const animTimer = setInterval(() => {
+      setFrame(prev => (prev + 1) % 4);
+    }, 150); // 150ms per frame
+    return () => clearInterval(animTimer);
+  }, [isMoving]);
 
   const DESIGN_WIDTH = 1440;
   const DESIGN_HEIGHT = 1024;
@@ -266,7 +283,7 @@ function App() {
         updatePosition(nextPos);
 
         const nearby = LOCATIONS.find(loc => {
-           return isPointInRotatedRect(nextPos.x + 16, nextPos.y + 16, loc.interaction);
+           return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 45, loc.interaction);
         });
 
         if (nearby) {
@@ -632,10 +649,33 @@ function App() {
 
         {/* Player */}
         <div
-          className="absolute w-8 h-8 bg-slate-900 rounded-full border-2 border-white shadow-xl flex items-center justify-center z-20"
-          style={{ left: position.x, top: position.y }}
+          className="absolute z-20 overflow-visible flex items-end justify-center drop-shadow-2xl"
+          style={{ width: 20, height: 50, left: position.x, top: position.y }}
         >
-          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+          {/* Bóng đổ (Shadow) dưới chân nhân vật */}
+          <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
+
+          {/* Sprite Khung hiển thị (Được nới rộng bề ngang để ảnh không bị bẹp) */}
+          <div 
+            className="absolute bottom-0 h-full overflow-hidden"
+            style={{ 
+              width: '40px', // Khung hiển thị ảnh dãn ra 40px (rộng gấp đôi hitbox)
+              left: '50%',
+              marginLeft: '-20px', // Giãn đều sang 2 bên để giữ tâm chuẩn xác
+              transform: `scaleX(${direction === 'left' || direction === 'down' ? -1 : 1})`
+            }}
+          >
+            <img 
+              src={direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage} 
+              alt="Character"
+              className="absolute top-0 left-0 max-w-none pointer-events-none" 
+              style={{
+                height: '100%',
+                width: '400%', // Hiển thị 1/4 ảnh tại một thời điểm
+                transform: `translateX(-${frame * 25}%)`
+              }} 
+            />
+          </div>
         </div>
       </div>
 
