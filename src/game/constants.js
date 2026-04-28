@@ -23,7 +23,7 @@ export const LOCATIONS = [
     name: 'Trường học',
     image: 'university.png',
     display: { x: 864, y: 0, rotation: 0, w: 430, h: 434 },
-    interaction: { x: 976, y: 217, rotation: -10, w: 74.08, h: 112.04 }
+    interaction: { x: 962.12, y: 211.57, rotation: -30, w: 107.1, h: 112.04 }
   },
   {
     id: 'market',
@@ -36,8 +36,8 @@ export const LOCATIONS = [
     id: 'home',
     name: 'Nhà trọ',
     image: 'apartment.png',
-    display: { x: 93, y: 653, rotation: 0, w: 352, h: 333 },
-    interaction: { x: 177, y: 845, rotation: 30, w: 188, h: 70.51 }
+    display: { x: 2, y: 568, rotation: 0, w: 442, h: 418 },
+    interaction: { x: 103, y: 833, rotation: 30, w: 188, h: 77.84 }
   },
   {
     id: 'work',
@@ -59,6 +59,19 @@ export const LOCATIONS = [
     image: 'home.png',
     display: { x: 1120, y: 693, rotation: 180, w: 347, h: 331 },
     interaction: { x: 1187, y: 833.36, rotation: -30, w: 111, h: 128.2 }
+  },
+  {
+    id: 'stadium',
+    name: 'Sân vận động',
+    image: 'stadium.png',
+    display: { x: 431, y: 276, rotation: 0, w: 577, h: 377 }
+  },
+  {
+    id: 'student_house',
+    name: 'Nhà học sinh',
+    image: 'home_of_student.png',
+    display: { x: 826, y: 512, rotation: 0, w: 379, h: 342 },
+    interaction: { x: 919.29, y: 732.89, rotation: -30, w: 72.77, h: 62.05 }
   }
 ];
 

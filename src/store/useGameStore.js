@@ -25,12 +25,15 @@ const useGameStore = create((set) => ({
     inventory: [],
     rentedRoom: null,
     rentTimer: 0,
+    hasTutorJob: false,
     isExpelled: false,
     termStartTime: null,
     allowanceAccumulator: 0,
     distanceCounter: 0,
     hospitalCount: 0,
     isStroke: false,
+    energyBuffTimer: 0,
+    activeMedicalBill: 0,
     electricityBill: {
       amount: 0,
       status: 'none', // 'none' | 'pending' | 'overdue' | 'paid'
@@ -46,6 +49,9 @@ const useGameStore = create((set) => ({
   
   isHospitalized: false,
   hospitalizationProgress: 0,
+  
+  isTutoring: false,
+  tutoringProgress: 0,
   
   // School logic state
   isClassStarting: false,
@@ -63,12 +69,15 @@ const useGameStore = create((set) => ({
   interactionStep: 'ask', // 'ask' | 'sub_menu'
   
   // Actions
-  updateStats: (newStats) => set((state) => ({
-    stats: { 
-      ...state.stats, 
-      ...(typeof newStats === 'function' ? newStats(state.stats) : newStats) 
+  updateStats: (newStats) => set((state) => {
+    const evaluatedStats = typeof newStats === 'function' ? newStats(state.stats) : newStats;
+    if (state.playerStats.energyBuffTimer > 0 && evaluatedStats.energy !== undefined && evaluatedStats.energy < state.stats.energy) {
+      evaluatedStats.energy = state.stats.energy; // Prevent energy loss
     }
-  })),
+    return {
+      stats: { ...state.stats, ...evaluatedStats }
+    };
+  }),
 
   updatePlayerStats: (newStats) => set((state) => ({
     playerStats: { 
@@ -86,7 +95,9 @@ const useGameStore = create((set) => ({
     let newEnergy = state.stats.energy;
 
     if (newDistanceCounter >= 200) {
-      newEnergy = Math.max(0, newEnergy - 1);
+      if (state.playerStats.energyBuffTimer <= 0) {
+        newEnergy = Math.max(0, newEnergy - 1);
+      }
       newDistanceCounter -= 200;
     }
 
@@ -147,9 +158,12 @@ const useGameStore = create((set) => ({
         isPaid: false,
         pendingParentSupport: false,
         hasClaimedParentSupport: false,
+        hasTutorJob: false,
         totalCredits: 0,
         tuitionDue: 0,
         termStartTime: now,
+        energyBuffTimer: 0,
+        activeMedicalBill: 0,
         electricityBill: { amount: 0, status: 'none', timeLeftToPay: 0 }
       },
       isClassStarting: false,
@@ -157,6 +171,8 @@ const useGameStore = create((set) => ({
       checkInWindow: 0,
       isCooking: false,
       cookingProgress: 0,
+      isTutoring: false,
+      tutoringProgress: 0,
     }));
   },
 
@@ -180,6 +196,7 @@ const useGameStore = create((set) => ({
         isPaid: false,
         pendingParentSupport: false,
         hasClaimedParentSupport: false,
+        hasTutorJob: false,
         totalCredits: 0,
         tuitionDue: 0,
         inventory: [],
@@ -191,6 +208,8 @@ const useGameStore = create((set) => ({
         distanceCounter: 0,
         hospitalCount: 0,
         isStroke: false,
+        energyBuffTimer: 0,
+        activeMedicalBill: 0,
         electricityBill: {
           amount: 0,
           status: 'none',
@@ -206,6 +225,8 @@ const useGameStore = create((set) => ({
       sleepProgress: 0,
       isHospitalized: false,
       hospitalizationProgress: 0,
+      isTutoring: false,
+      tutoringProgress: 0,
       position: { x: 1114, y: 864 },
       direction: 'down',
       currentScene: 'map',
@@ -224,6 +245,9 @@ const useGameStore = create((set) => ({
   
   setHospitalized: (hospitalized) => set({ isHospitalized: hospitalized }),
   setHospitalizationProgress: (progress) => set({ hospitalizationProgress: progress }),
+  
+  setTutoring: (tutoring) => set({ isTutoring: tutoring }),
+  setTutoringProgress: (progress) => set({ tutoringProgress: progress }),
   
   addToInventory: (item) => set((state) => ({
     playerStats: {

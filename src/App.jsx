@@ -9,6 +9,7 @@ import AttendanceTimer from './components/AttendanceTimer';
 import CookingOverlay from './components/CookingOverlay';
 import SleepOverlay from './components/SleepOverlay';
 import HospitalOverlay from './components/HospitalOverlay';
+import TutoringOverlay from './components/TutoringOverlay';
 import TermTimer from './components/TermTimer';
 import ElectricityBillOverlay from './components/ElectricityBillOverlay';
 import GameOver from './components/GameOver';
@@ -23,14 +24,18 @@ import homeImage from './assets/home.png';
 import jobCenterImage from './assets/job_center.png';
 import spriteUpImage from './assets/sprite_up.png';
 import spriteRightImage from './assets/sprite_right.png';
+import stadiumImage from './assets/stadium.png';
+import homeOfStudentImage from './assets/home_of_student.png';
 
 const IMAGE_MAP = {
   'hospital.png': hospitalImage,
+  'stadium.png': stadiumImage,
   'university.png': universityImage,
   'apartment.png': apartmentImage,
   'supermarket.png': supermarketImage,
   'home.png': homeImage,
-  'job_center.png': jobCenterImage
+  'job_center.png': jobCenterImage,
+  'home_of_student.png': homeOfStudentImage
 };
 
 const isPointInRotatedRect = (px, py, rect) => {
@@ -38,13 +43,13 @@ const isPointInRotatedRect = (px, py, rect) => {
   const cx = x + w / 2;
   const cy = y + h / 2;
   const angleRad = rotation * (Math.PI / 180);
-  
+
   const dx = px - cx;
   const dy = py - cy;
-  
+
   const unX = Math.cos(-angleRad) * dx - Math.sin(-angleRad) * dy;
   const unY = Math.sin(-angleRad) * dx + Math.cos(-angleRad) * dy;
-  
+
   return unX >= -w / 2 && unX <= w / 2 && unY >= -h / 2 && unY <= h / 2;
 };
 
@@ -62,6 +67,7 @@ function App() {
     isCooking, setCooking, cookingProgress, setCookingProgress, addToInventory, removeFromInventory, payRent,
     isSleeping, setSleeping, sleepProgress, setSleepProgress,
     isHospitalized, setHospitalized, hospitalizationProgress, setHospitalizationProgress,
+    isTutoring, setTutoring, tutoringProgress, setTutoringProgress,
     generateElectricityBill, payElectricityBill, updateElectricityTimer,
     resetGame
   } = useGameStore();
@@ -80,6 +86,8 @@ function App() {
   const [showPrompt, setShowPrompt] = useState(null);
   const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(5 * 60);
   const [showExhaustedPopup, setShowExhaustedPopup] = useState(false);
+  const [showTutorAlert, setShowTutorAlert] = useState(false);
+  const [showShipperAlert, setShowShipperAlert] = useState(false);
 
   // Sprite Animation State
   const isMoving = !!(keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
@@ -173,6 +181,20 @@ function App() {
     return () => clearInterval(timer);
   }, [playerStats.electricityBill.status, updateElectricityTimer, updateStats]);
 
+  // Energy Buff Timer (Miễn nhiễm giảm năng lượng)
+  useEffect(() => {
+    if (playerStats.energyBuffTimer <= 0) return;
+    const buffTimer = setInterval(() => {
+      useGameStore.setState(state => ({
+        playerStats: {
+          ...state.playerStats,
+          energyBuffTimer: Math.max(0, state.playerStats.energyBuffTimer - 1)
+        }
+      }));
+    }, 1000);
+    return () => clearInterval(buffTimer);
+  }, [playerStats.energyBuffTimer]);
+
   // Homeless Notification Logic
   useEffect(() => {
     if (playerStats.rentedRoom) return;
@@ -242,7 +264,7 @@ function App() {
         updateStats({ money: stats.money + 3000000 });
         updatePlayerStats({ allowanceAccumulator: 0 });
         notify("Bố mẹ vừa gửi cho bạn 3.000.000đ tiền sinh hoạt phí!");
-        
+
         // New Rule: Trigger electricity bill after allowance notification ends (2s)
         setTimeout(() => {
           if (playerStats.electricityBill.status === 'none') {
@@ -265,7 +287,7 @@ function App() {
       const state = useGameStore.getState();
       const currentKeys = keys; // keys state is fine since it's updated via listeners
 
-      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
 
       let moveKey = null;
       if (currentKeys.ArrowUp) moveKey = 'ArrowUp';
@@ -283,7 +305,10 @@ function App() {
         updatePosition(nextPos);
 
         const nearby = LOCATIONS.find(loc => {
-           return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 45, loc.interaction);
+          if (!loc.interaction) return false;
+          // Coi như mô hình (không thể vào) nếu chưa nhận việc gia sư
+          if (loc.id === 'student_house' && !state.playerStats.hasTutorJob) return false;
+          return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 45, loc.interaction);
         });
 
         if (nearby) {
@@ -491,6 +516,70 @@ function App() {
         payElectricityBill();
         closeModal();
         break;
+      case 'accept_shipper':
+        if (stats.money >= 100000) {
+          updateStats({ money: stats.money - 100000 });
+          closeModal();
+          setShowShipperAlert(true);
+        } else {
+          notify("Bạn không có đủ 100.000đ để đóng phí môi giới!");
+        }
+        break;
+      case 'accept_tutor':
+        if (stats.money >= 300000) {
+          updateStats({ money: stats.money - 300000 });
+          updatePlayerStats({ hasTutorJob: true });
+          setShowTutorAlert(true);
+          closeModal();
+        } else {
+          notify("Bạn không có đủ 300.000đ để đóng phí môi giới!");
+        }
+        break;
+      case 'teach_tutor':
+        if (stats.energy >= 10) {
+          setTutoring(true);
+          setTutoringProgress(0);
+          closeModal();
+
+          const tutorTotalTime = 60; // 60s real time
+          let tutorCurrent = 0;
+          const tutInterval = setInterval(() => {
+            tutorCurrent += 0.1;
+            const prog = (tutorCurrent / tutorTotalTime) * 100;
+            if (prog >= 100) {
+              clearInterval(tutInterval);
+              setTutoring(false);
+              updateStats(prev => ({ money: prev.money + 100000, energy: Math.max(0, prev.energy - 10) }));
+              advanceTime(1);
+              notify(`Bạn đã dạy gia sư xong và nhận được 100.000đ!`);
+            } else {
+              setTutoringProgress(prog);
+            }
+          }, 100);
+        } else {
+          notify("Bạn quá mệt để dạy gia sư!");
+        }
+        break;
+      case 'examine_hospital':
+        if (stats.money >= 100000) {
+          const cost = Math.floor(Math.random() * (500000 - 200000 + 1)) + 200000;
+          updateStats({ money: stats.money - 100000 });
+          updatePlayerStats({ activeMedicalBill: cost });
+          setInteractionStep('hospital_treatment');
+        } else {
+          notify("Bạn không có đủ 100.000đ để khám tổng quát!");
+        }
+        break;
+      case 'pay_hospital_bill':
+        if (stats.money >= playerStats.activeMedicalBill) {
+          updateStats({ money: stats.money - playerStats.activeMedicalBill });
+          updatePlayerStats({ activeMedicalBill: 0, energyBuffTimer: 120 });
+          notify("Thanh toán thành công! Miễn nhiễm tụt năng lượng trong 2 phút.");
+          closeModal();
+        } else {
+          notify("Bạn không đủ tiền thanh toán viện phí!");
+        }
+        break;
       default:
         break;
     }
@@ -498,7 +587,7 @@ function App() {
 
   return (
     <div className="w-screen h-screen bg-slate-950 flex flex-row overflow-hidden font-sans">
-      
+
       {/* LEFT SIDEBAR (Thông số) */}
       <div className="flex-1 min-w-[280px] bg-slate-900 border-r border-slate-800 p-6 flex flex-col gap-6 z-50 overflow-y-auto">
         <h2 className="text-xl font-black text-white/50 uppercase tracking-widest mb-2 font-mono">Thông số</h2>
@@ -527,10 +616,10 @@ function App() {
           <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden border border-white/5">
             <div
               className={`h-full transition-all duration-500 rounded-full ${stats.energy <= 20
-                  ? 'bg-gradient-to-r from-red-600 to-orange-500'
-                  : stats.energy <= 50
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-300'
-                    : 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                ? 'bg-gradient-to-r from-red-600 to-orange-500'
+                : stats.energy <= 50
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-300'
+                  : 'bg-gradient-to-r from-emerald-600 to-emerald-400'
                 }`}
               style={{ width: `${stats.energy}%` }}
             />
@@ -541,6 +630,14 @@ function App() {
         <div className="glass-morphism bg-white/5 px-6 py-6 rounded-[28px] border border-white/10 text-center text-white shadow-xl">
           <span className="text-xs font-black uppercase opacity-50 block tracking-widest mb-2">Thời gian</span>
           <span className="font-black text-3xl">Ngày {stats.time.day} - {String(stats.time.hour).padStart(2, '0')}:00</span>
+        </div>
+
+        {/* Năng lượng tốt (Buff) */}
+        <div className="glass-morphism bg-white/5 py-5 px-6 rounded-[24px] border border-white/10 text-white shadow-xl text-center">
+          <span className="text-[10px] font-black uppercase opacity-50 block tracking-widest mb-1">Năng lượng tốt</span>
+          <span className={`text-2xl font-black ${playerStats.energyBuffTimer > 0 ? 'text-indigo-400' : 'text-slate-500'}`}>
+             {playerStats.energyBuffTimer > 0 ? `${Math.floor(playerStats.energyBuffTimer / 60)}:${String(playerStats.energyBuffTimer % 60).padStart(2, '0')}` : '0:00'}
+          </span>
         </div>
 
         {/* Timers */}
@@ -559,12 +656,12 @@ function App() {
       </div>
 
       {/* MIDDLE CONTAINER (GAME VIEWPORT) */}
-      <div 
-        className="relative bg-slate-950 overflow-hidden shadow-2xl" 
+      <div
+        className="relative bg-slate-950 overflow-hidden shadow-2xl"
         style={{ width: DESIGN_WIDTH * scaleFactor, height: DESIGN_HEIGHT * scaleFactor, flexShrink: 0 }}
       >
         {/* GAME CONTAINER (SCALED) */}
-        <div 
+        <div
           className="absolute top-0 left-0 bg-green-100 overflow-hidden transform-gpu"
           style={{
             width: DESIGN_WIDTH,
@@ -597,6 +694,7 @@ function App() {
           {isCooking && <CookingOverlay progress={cookingProgress} />}
           {isSleeping && <SleepOverlay progress={sleepProgress} />}
           {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
+          {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
 
           <ElectricityBillOverlay
             bill={playerStats.electricityBill}
@@ -604,143 +702,181 @@ function App() {
             money={stats.money}
           />
 
-      {/* World Map */}
-      <div 
-        className="absolute inset-0 z-10 isolate"
-        style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
-        onClick={(e) => {
-           // Cập nhật tọa độ Click theo yêu cầu của tỷ lệ scaleFactor
-           const rect = e.currentTarget.getBoundingClientRect();
-           const clickX = (e.clientX - rect.left) / scaleFactor;
-           const clickY = (e.clientY - rect.top) / scaleFactor;
-           
-           // Xử lý tọa độ map ở đây (Ví dụ: di chuyển tức thì, point-n-click)
-           console.log("Scaled Click:", clickX, clickY);
-        }}
-      >
-        <img 
-          src={pathImage} 
-          alt="Map Base" 
-          className="absolute top-0 left-0" 
-          style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT, objectFit: 'cover', zIndex: 0 }} 
-        />
-        
-        {LOCATIONS.map(loc => {
-           const d = loc.display;
-           const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
+          {/* World Map */}
+          <div
+            className="absolute inset-0 z-10 isolate"
+            style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
+            onClick={(e) => {
+              // Cập nhật tọa độ Click theo yêu cầu của tỷ lệ scaleFactor
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickX = (e.clientX - rect.left) / scaleFactor;
+              const clickY = (e.clientY - rect.top) / scaleFactor;
 
-           // Y-Sorting và Xử lý che khuất (Thu hẹp viền cho Map chéo)
-           const buildingBaseY = loc.interaction.y || (d.y + d.h);
-           const playerFeetX = position.x + 10;
-           const playerFeetY = position.y + 50;
-
-           const isOccluded = 
-             playerFeetX > d.x + d.w * 0.15 && 
-             playerFeetX < d.x + d.w * 0.85 && 
-             playerFeetY > d.y + d.h * 0.1 && 
-             playerFeetY <= buildingBaseY;
-
-           return (
-            <img
-              key={loc.id}
-              src={IMAGE_MAP[loc.image]}
-              alt={loc.name}
-              className="absolute transition-opacity duration-300 ease-in-out"
-              style={{
-                left: d.x,
-                top: d.y,
-                width: d.w,
-                height: d.h,
-                transform: tFlip,
-                transformOrigin: 'center',
-                zIndex: Math.floor(buildingBaseY),
-                opacity: isOccluded ? 0.5 : 1
-              }}
-            />
-          );
-        })}
-
-        {/* Player */}
-        <div
-          className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
-          style={{ 
-            width: 20, height: 50, left: position.x, top: position.y, 
-            zIndex: Math.floor(position.y + 50) 
-          }}
-        >
-          {/* Bóng đổ (Shadow) dưới chân nhân vật */}
-          <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
-
-          {/* Sprite Khung hiển thị (Được nới rộng bề ngang để ảnh không bị bẹp) */}
-          <div 
-            className="absolute bottom-0 h-full overflow-hidden"
-            style={{ 
-              width: '40px', // Khung hiển thị ảnh dãn ra 40px (rộng gấp đôi hitbox)
-              left: '50%',
-              marginLeft: '-20px', // Giãn đều sang 2 bên để giữ tâm chuẩn xác
-              transform: `scaleX(${direction === 'left' || direction === 'down' ? -1 : 1})`
+              // Xử lý tọa độ map ở đây (Ví dụ: di chuyển tức thì, point-n-click)
+              console.log("Scaled Click:", clickX, clickY);
             }}
           >
-            <img 
-              src={direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage} 
-              alt="Character"
-              className="absolute top-0 left-0 max-w-none pointer-events-none" 
-              style={{
-                height: '100%',
-                width: '400%', // Hiển thị 1/4 ảnh tại một thời điểm
-                transform: `translateX(-${frame * 25}%)`
-              }} 
+            <img
+              src={pathImage}
+              alt="Map Base"
+              className="absolute top-0 left-0"
+              style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT, objectFit: 'cover', zIndex: 0 }}
             />
-          </div>
-        </div>
-      </div>
 
-      {/* Notifications */}
-      <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
-        {notifications.map(n => (
-          <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
-             <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
-             <button 
-              onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
-             >
-                <X className="w-6 h-6 text-white/40" />
-             </button>
-          </div>
-        ))}
-      </div>
+            {LOCATIONS.map(loc => {
+              const d = loc.display;
+              const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
 
-      {/* Exhausted Popup (Mới) */}
-      {showExhaustedPopup && (
-        <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-          <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
-            <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
-            <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-              Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
-            </p>
-            <button 
-              onClick={handleExhaustedOk}
-              className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+              // Y-Sorting và Xử lý che khuất: Trừ bớt 25% viền ảnh thừa do hình ảnh có khoảng trống
+              const buildingBaseY = d.y + d.h * 0.75; // Căn Y-Sorting tại 75% chiều cao hình ảnh thay vì 100%
+              const playerFeetX = position.x + 10;
+              const playerFeetY = position.y + 50;
+
+              const isOccluded =
+                playerFeetX > d.x + d.w * 0.25 && // Trừ 25% viền trái
+                playerFeetX < d.x + d.w * 0.75 && // Trừ 25% viền phải
+                playerFeetY > d.y + d.h * 0.25 && // Trừ 25% viền trên
+                playerFeetY <= buildingBaseY;
+
+              return (
+                <img
+                  key={loc.id}
+                  src={IMAGE_MAP[loc.image]}
+                  alt={loc.name}
+                  className="absolute transition-opacity duration-300 ease-in-out"
+                  style={{
+                    left: d.x,
+                    top: d.y,
+                    width: d.w,
+                    height: d.h,
+                    transform: tFlip,
+                    transformOrigin: 'center',
+                    zIndex: Math.floor(buildingBaseY),
+                    opacity: isOccluded ? 0.5 : 1
+                  }}
+                />
+              );
+            })}
+
+            {/* Player */}
+            <div
+              className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
+              style={{
+                width: 20, height: 50, left: position.x, top: position.y,
+                zIndex: Math.floor(position.y + 50)
+              }}
             >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Bóng đổ (Shadow) dưới chân nhân vật */}
+              <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
 
-      {/* Interaction Modal */}
-      {isModalOpen && (
-        <InteractionModal
-          location={activeLocation}
-          interactionStep={interactionStep}
-          setInteractionStep={setInteractionStep}
-          onClose={closeModal}
-          onAction={handleAction}
-          playerStats={playerStats}
-          stats={stats}
-          isClassStarting={isClassStarting}
-        />
-      )}
+              {/* Sprite Khung hiển thị (Được nới rộng bề ngang để ảnh không bị bẹp) */}
+              <div
+                className="absolute bottom-0 h-full overflow-hidden"
+                style={{
+                  width: '40px', // Khung hiển thị ảnh dãn ra 40px (rộng gấp đôi hitbox)
+                  left: '50%',
+                  marginLeft: '-20px', // Giãn đều sang 2 bên để giữ tâm chuẩn xác
+                  transform: `scaleX(${direction === 'left' || direction === 'down' ? -1 : 1})`
+                }}
+              >
+                <img
+                  src={direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage}
+                  alt="Character"
+                  className="absolute top-0 left-0 max-w-none pointer-events-none"
+                  style={{
+                    height: '100%',
+                    width: '400%', // Hiển thị 1/4 ảnh tại một thời điểm
+                    transform: `translateX(-${frame * 25}%)`
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
+            {notifications.map(n => (
+              <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
+                <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
+                <button
+                  onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+                >
+                  <X className="w-6 h-6 text-white/40" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Exhausted Popup (Mới) */}
+          {showExhaustedPopup && (
+            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+              <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
+                <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
+                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                  Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
+                </p>
+                <button
+                  onClick={handleExhaustedOk}
+                  className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tutor Alert */}
+          {showTutorAlert && (
+            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+              <div className="bg-slate-900 border-2 border-indigo-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(99,102,241,0.3)] animate-in zoom-in-95 duration-500">
+                <h3 className="text-3xl font-black text-indigo-500 uppercase mb-6 tracking-widest">THÔNG BÁO</h3>
+                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                  Nhà học sinh ở cạnh nhà bạn!
+                </p>
+                <button 
+                  onClick={() => {
+                    setShowTutorAlert(false);
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Shipper Alert */}
+          {showShipperAlert && (
+            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+              <div className="bg-slate-900 border-2 border-rose-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(244,63,94,0.3)] animate-in zoom-in-95 duration-500">
+                <h3 className="text-3xl font-black text-rose-500 uppercase mb-6 tracking-widest">THẤT BẠI</h3>
+                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                  Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
+                </p>
+                <button 
+                  onClick={() => setShowShipperAlert(false)}
+                  className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Interaction Modal */}
+          {isModalOpen && (
+            <InteractionModal
+              location={activeLocation}
+              interactionStep={interactionStep}
+              setInteractionStep={setInteractionStep}
+              onClose={closeModal}
+              onAction={handleAction}
+              playerStats={playerStats}
+              stats={stats}
+              isClassStarting={isClassStarting}
+            />
+          )}
         </div>
       </div>
 

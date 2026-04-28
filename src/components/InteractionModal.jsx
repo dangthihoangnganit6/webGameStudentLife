@@ -23,15 +23,19 @@ const InteractionModal = ({
     if (interactionStep === 'ask') {
       return (
         <div className="text-center">
-          <p className="text-slate-300 text-lg mb-8 leading-relaxed">
-            Bạn muốn vào <span className="text-white font-bold">{location.name}</span> không?
-          </p>
+          <h3 className="text-white font-black text-2xl uppercase mb-8 tracking-widest">{location.name}</h3>
           <div className="grid grid-cols-2 gap-4">
             <button 
-              onClick={() => setInteractionStep('sub_menu')}
-              className="py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-indigo-500/20"
+              onClick={() => {
+                if (location.id === 'hospital') {
+                  setInteractionStep('hospital_sub_menu');
+                } else {
+                  setInteractionStep('sub_menu');
+                }
+              }}
+              className="py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 uppercase"
             >
-              Có
+              Vào
             </button>
             <button 
               onClick={onClose}
@@ -40,6 +44,102 @@ const InteractionModal = ({
               Không
             </button>
           </div>
+        </div>
+      );
+    }
+
+    if (interactionStep === 'ask_tutor') {
+      return (
+        <div className="text-center">
+          <h3 className="text-white font-black text-2xl uppercase mb-4">Gia Sư</h3>
+          <div className="text-slate-300 text-lg mb-8 leading-relaxed bg-slate-900/50 block p-6 rounded-2xl border border-white/5 space-y-2">
+            <div>Mức lương: <span className="text-emerald-400 font-bold">100.000đ / lần dạy</span></div>
+            <div>Tiêu tốn: <span className="text-amber-400 font-bold">10 Năng lượng</span>/lần</div>
+            <div className="pt-2 mt-2 border-t border-white/10">Phí môi giới: <span className="text-rose-400 font-bold">300.000đ</span></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => onAction('accept_tutor')}
+              className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm uppercase"
+            >
+              Đóng 300k & Nhận việc
+            </button>
+            <button 
+              onClick={() => setInteractionStep('sub_menu')}
+              className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all uppercase"
+            >
+              Không
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    if (interactionStep === 'ask_shipper') {
+      return (
+        <div className="text-center">
+          <h3 className="text-white font-black text-2xl uppercase mb-4">Xe Ôm Công Nghệ</h3>
+          <div className="text-slate-300 text-lg mb-8 leading-relaxed bg-slate-900/50 block p-6 rounded-2xl border border-white/5 space-y-2">
+            <div>Thu nhập: <span className="text-emerald-400 font-bold">Tuỳ chuyến</span></div>
+            <div>Tiêu tốn: <span className="text-amber-400 font-bold">5 Năng lượng</span>/chuyến</div>
+            <div className="pt-2 mt-2 border-t border-white/10">Phí môi giới: <span className="text-rose-400 font-bold">100.000đ</span></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => onAction('accept_shipper')}
+              className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm uppercase"
+            >
+              Đóng 100k & Nhận việc
+            </button>
+            <button 
+              onClick={() => setInteractionStep('sub_menu')}
+              className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all uppercase"
+            >
+              Không
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (interactionStep === 'hospital_sub_menu') {
+      return (
+        <div className="text-center">
+          <h3 className="text-white font-black text-2xl uppercase mb-4">Bệnh Viện</h3>
+          <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+            Bạn có muốn khám tổng quát không?<br/>
+            Phí khám: <span className="text-rose-400 font-bold">100.000đ</span>
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => onAction('examine_hospital')}
+              className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+            >
+              Khám ngay
+            </button>
+            <button 
+              onClick={onClose}
+              className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all"
+            >
+              Rời đi
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (interactionStep === 'hospital_treatment') {
+      return (
+        <div className="text-center">
+           <h3 className="text-white font-black text-2xl uppercase mb-4">Hoá Đơn Viện Phí</h3>
+           <div className="text-slate-300 text-lg mb-8 leading-relaxed bg-slate-900/50 block p-6 rounded-2xl border border-rose-500/30 mx-auto">
+              Chi phí chữa bệnh: <span className="text-rose-400 font-black text-3xl block mt-2">{playerStats.activeMedicalBill?.toLocaleString() || 0}đ</span>
+           </div>
+           <p className="text-emerald-400 text-sm mb-6 font-bold italic">Thanh toán ngay để nhận chế độ theo dõi đặc biệt: Miễn nhiễm mọi nguồn gây tụt Năng lượng trong 2 phút tiếp theo.</p>
+           <div className="grid grid-cols-2 gap-4">
+             <button onClick={() => onAction('pay_hospital_bill')} className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg text-sm uppercase">Thanh toán</button>
+             <button onClick={onClose} className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all uppercase">Từ chối chữa</button>
+           </div>
         </div>
       );
     }
@@ -426,6 +526,34 @@ const InteractionModal = ({
       );
     }
 
+    // --- LOGIC NHÀ HỌC SINH ---
+    if (location.id === 'student_house') {
+      return (
+        <div className="space-y-6 text-center">
+          <h3 className="text-white font-black text-2xl uppercase mb-4 tracking-widest">Nhà học sinh</h3>
+          <div className="bg-indigo-950/20 p-6 rounded-2xl border border-indigo-500/20 mb-6">
+            <GraduationCap className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+            <p className="text-slate-300 text-lg font-bold">Bạn có vào dạy gia sư không?</p>
+            <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">Lương: 100.000đ / lần dạy</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => onAction('teach_tutor')}
+              className="py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl transition-all shadow-xl active:scale-95 uppercase"
+            >
+              Vào dạy
+            </button>
+            <button 
+              onClick={onClose}
+              className="py-5 bg-slate-800 hover:bg-slate-700 text-slate-400 font-black rounded-xl transition-all uppercase"
+            >
+              Không
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     // --- LOGIC LÀM VIÊC ---
     if (location.id === 'work') {
       return (
@@ -437,21 +565,37 @@ const InteractionModal = ({
           </div>
 
           <div className="space-y-3">
-            {workOptions.map(job => (
+            {workOptions.map(job => {
+              const isTutor = job.id === 'job_tutor';
+              const isShipper = job.id === 'job_shipper';
+              const alreadyGot = isTutor && playerStats.hasTutorJob;
+              return (
               <button
                 key={job.id}
-                onClick={() => onAction('work', job)}
-                className="w-full p-4 bg-slate-800/50 hover:bg-rose-600 group rounded-2xl border border-white/5 transition-all text-left flex justify-between items-center"
+                disabled={alreadyGot}
+                onClick={() => {
+                  if (isTutor && !alreadyGot) {
+                    setInteractionStep('ask_tutor');
+                  } else if (isShipper) {
+                    setInteractionStep('ask_shipper');
+                  } else {
+                    onAction('work', job);
+                  }
+                }}
+                className={`w-full p-4 group rounded-2xl border transition-all text-left flex justify-between items-center ${
+                   alreadyGot ? 'bg-slate-800/80 border-rose-500/30 opacity-50 cursor-not-allowed' : 'bg-slate-800/50 hover:bg-rose-600 border-white/5'
+                }`}
               >
                 <div>
-                  <div className="text-white font-bold group-hover:text-white">{job.name}</div>
-                  <div className="text-[10px] text-slate-500 group-hover:text-rose-200 uppercase">
+                  <div className={`font-bold ${alreadyGot ? 'text-slate-500' : 'text-white group-hover:text-white'}`}>
+                    {job.name} {alreadyGot && '(Đã nhận)'}
+                  </div>
+                  <div className={`text-[10px] uppercase ${alreadyGot ? 'text-slate-600' : 'text-slate-500 group-hover:text-rose-200'}`}>
                     Tiêu tốn: {job.exhaustion} Năng lượng
                   </div>
                 </div>
-                <div className="text-emerald-400 font-black text-xl group-hover:text-white">+{job.income.toLocaleString()}đ</div>
               </button>
-            ))}
+            )})}
           </div>
           
           <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors border-t border-white/5 pt-6">Rời đi</button>

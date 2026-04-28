@@ -1,4 +1,4 @@
 [
-  { "id": "job_shipper", "name": "Xe ôm công nghệ", "income": 500, "exhaustion": 30 },
+  { "id": "job_shipper", "name": "Xe ôm công nghệ", "income": 500, "exhaustion": 5 },
   { "id": "job_tutor", "name": "Gia sư", "income": 300, "exhaustion": 10 }
 ]
