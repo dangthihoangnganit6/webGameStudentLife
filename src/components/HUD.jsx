@@ -5,7 +5,9 @@ const HUD = ({ stats }) => {
   const formatTime = (time) => {
     const paddedHour = String(time.hour).padStart(2, '0');
     const paddedMinute = String(time.minute).padStart(2, '0');
-    return `Ngày ${time.day}, ${paddedHour}:${paddedMinute}`;
+    const year = Math.ceil(time.day / 2);
+    const semester = time.day % 2 === 0 ? 2 : 1;
+    return `Năm ${year} - Học kì ${semester}, ${paddedHour}:${paddedMinute}`;
   };
 
   return (

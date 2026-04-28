@@ -629,7 +629,9 @@ function App() {
         {/* Thời gian in Game */}
         <div className="glass-morphism bg-white/5 px-6 py-6 rounded-[28px] border border-white/10 text-center text-white shadow-xl">
           <span className="text-xs font-black uppercase opacity-50 block tracking-widest mb-2">Thời gian</span>
-          <span className="font-black text-3xl">Ngày {stats.time.day} - {String(stats.time.hour).padStart(2, '0')}:00</span>
+          <span className="font-black text-2xl">
+            Năm {Math.ceil(stats.time.day / 2)} - Học kì {stats.time.day % 2 === 0 ? 2 : 1}
+          </span>
         </div>
 
         {/* Năng lượng tốt (Buff) */}
