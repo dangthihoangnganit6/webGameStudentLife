@@ -262,7 +262,7 @@ function App() {
         if (moveKey.includes('Left')) setDirection('left');
         if (moveKey.includes('Right')) setDirection('right');
 
-        const nextPos = calculateNextMove(state.position, moveKey, MAP_CONFIG.CHARACTER_SPEED, { width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT });
+        const nextPos = calculateNextMove(state.position, moveKey, MAP_CONFIG.CHARACTER_SPEED, { width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }, scaleFactor);
         updatePosition(nextPos);
 
         const nearby = LOCATIONS.find(loc => {
@@ -281,7 +281,7 @@ function App() {
     }, 16);
 
     return () => clearInterval(moveLoop);
-  }, [keys, openModal, showPrompt, updatePosition, setDirection]); // Reduced dependencies, using state directly inside
+  }, [keys, openModal, showPrompt, updatePosition, setDirection, scaleFactor]); // Reduced dependencies, using state directly inside
 
   // Attendance Loop logic
   useEffect(() => {
