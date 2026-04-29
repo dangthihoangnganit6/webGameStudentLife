@@ -13,6 +13,7 @@ import TutoringOverlay from './components/TutoringOverlay';
 import TermTimer from './components/TermTimer';
 import ElectricityBillOverlay from './components/ElectricityBillOverlay';
 import GameOver from './components/GameOver';
+import WaitingOverlay from './components/WaitingOverlay';
 import { X, Activity } from 'lucide-react';
 
 import pathImage from './assets/path.png';
@@ -26,6 +27,10 @@ import spriteUpImage from './assets/sprite_up.png';
 import spriteRightImage from './assets/sprite_right.png';
 import stadiumImage from './assets/stadium.png';
 import homeOfStudentImage from './assets/home_of_student.png';
+import cantinImage from './assets/cantin.png';
+import shopImage from './assets/shop.png';
+import coffeeImage from './assets/coffee.png';
+import university1Image from './assets/university1.png';
 
 const IMAGE_MAP = {
   'hospital.png': hospitalImage,
@@ -35,7 +40,11 @@ const IMAGE_MAP = {
   'supermarket.png': supermarketImage,
   'home.png': homeImage,
   'job_center.png': jobCenterImage,
-  'home_of_student.png': homeOfStudentImage
+  'home_of_student.png': homeOfStudentImage,
+  'cantin.png': cantinImage,
+  'shop.png': shopImage,
+  'coffee.png': coffeeImage,
+  'university1.png': university1Image
 };
 
 const isPointInRotatedRect = (px, py, rect) => {
@@ -68,6 +77,7 @@ function App() {
     isSleeping, setSleeping, sleepProgress, setSleepProgress,
     isHospitalized, setHospitalized, hospitalizationProgress, setHospitalizationProgress,
     isTutoring, setTutoring, tutoringProgress, setTutoringProgress,
+    isWaiting, setWaiting, waitingProgress, setWaitingProgress,
     generateElectricityBill, payElectricityBill, updateElectricityTimer,
     resetGame
   } = useGameStore();
@@ -92,6 +102,7 @@ function App() {
   // Sprite Animation State
   const isMoving = !!(keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
   const [frame, setFrame] = useState(0);
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     if (!isMoving) {
@@ -116,6 +127,17 @@ function App() {
     handleResize(); // Initialize on mount
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Keyboard shortcut for Debug Hitboxes (H key)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key.toLowerCase() === 'h') {
+        setShowDebug(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Term Sync & Expulsion Logic
@@ -287,7 +309,7 @@ function App() {
       const state = useGameStore.getState();
       const currentKeys = keys; // keys state is fine since it's updated via listeners
 
-      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
 
       let moveKey = null;
       if (currentKeys.ArrowUp) moveKey = 'ArrowUp';
@@ -308,7 +330,11 @@ function App() {
           if (!loc.interaction) return false;
           // Coi như mô hình (không thể vào) nếu chưa nhận việc gia sư
           if (loc.id === 'student_house' && !state.playerStats.hasTutorJob) return false;
-          return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 45, loc.interaction);
+          return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 25, {
+            ...loc.interaction,
+            x: loc.interaction.x + 10,
+            y: loc.interaction.y + 25
+          });
         });
 
         if (nearby) {
@@ -535,6 +561,11 @@ function App() {
           notify("Bạn không có đủ 300.000đ để đóng phí môi giới!");
         }
         break;
+      case 'accept_waiter':
+        updatePlayerStats({ hasWaiterJob: true });
+        notify("Bạn đã nhận việc Phục vụ! Hãy đến Căng tin để bắt đầu làm việc.");
+        closeModal();
+        break;
       case 'teach_tutor':
         if (stats.energy >= 10) {
           setTutoring(true);
@@ -558,6 +589,38 @@ function App() {
           }, 100);
         } else {
           notify("Bạn quá mệt để dạy gia sư!");
+        }
+        break;
+      case 'work_waiter':
+        if (stats.energy >= 10) {
+          setWaiting(true);
+          setWaitingProgress(0);
+          closeModal();
+
+          const waiterTotalTime = 30; // 30s
+          let waiterCurrent = 0;
+          const waitInterval = setInterval(() => {
+            waiterCurrent += 0.1;
+            const prog = (waiterCurrent / waiterTotalTime) * 100;
+            if (prog >= 100) {
+              clearInterval(waitInterval);
+              setWaiting(false);
+              updateStats(prev => ({ money: prev.money + 50000, energy: Math.max(0, prev.energy - 10) }));
+              notify(`Bạn đã hoàn thành ca làm và nhận được 50.000đ!`);
+            } else {
+              setWaitingProgress(prog);
+            }
+          }, 100);
+        } else {
+          notify("Bạn quá mệt để làm việc này!");
+        }
+        break;
+      case 'buy_canteen_food':
+        if (stats.money >= data.price) {
+          updateStats({ money: stats.money - data.price, energy: Math.min(100, stats.energy + data.energy) });
+          notify(`Bạn đã mua ${data.name} và hồi ${data.energy} năng lượng!`);
+        } else {
+          notify("Bạn không đủ tiền!");
         }
         break;
       case 'examine_hospital':
@@ -638,7 +701,7 @@ function App() {
         <div className="glass-morphism bg-white/5 py-5 px-6 rounded-[24px] border border-white/10 text-white shadow-xl text-center">
           <span className="text-[10px] font-black uppercase opacity-50 block tracking-widest mb-1">Năng lượng tốt</span>
           <span className={`text-2xl font-black ${playerStats.energyBuffTimer > 0 ? 'text-indigo-400' : 'text-slate-500'}`}>
-             {playerStats.energyBuffTimer > 0 ? `${Math.floor(playerStats.energyBuffTimer / 60)}:${String(playerStats.energyBuffTimer % 60).padStart(2, '0')}` : '0:00'}
+            {playerStats.energyBuffTimer > 0 ? `${Math.floor(playerStats.energyBuffTimer / 60)}:${String(playerStats.energyBuffTimer % 60).padStart(2, '0')}` : '0:00'}
           </span>
         </div>
 
@@ -655,6 +718,19 @@ function App() {
         {!playerStats.isPaid && (
           <TermTimer timeLeft={timeLeftToEnroll} isEnrolled={playerStats.isPaid} />
         )}
+
+        {/* Debug Toggle */}
+        <div className="mt-auto pt-6 border-t border-white/5">
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all border ${showDebug
+              ? 'bg-red-500/20 border-red-500/50 text-red-500 shadow-lg shadow-red-500/10'
+              : 'bg-white/5 border-white/10 text-slate-500 hover:bg-white/10'
+              }`}
+          >
+            {showDebug ? 'Tắt Debug Hitboxes' : 'Bật Debug Hitboxes'}
+          </button>
+        </div>
       </div>
 
       {/* MIDDLE CONTAINER (GAME VIEWPORT) */}
@@ -697,6 +773,7 @@ function App() {
           {isSleeping && <SleepOverlay progress={sleepProgress} />}
           {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
           {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
+          {isWaiting && <WaitingOverlay progress={waitingProgress} />}
 
           <ElectricityBillOverlay
             bill={playerStats.electricityBill}
@@ -741,24 +818,64 @@ function App() {
                 playerFeetY <= buildingBaseY;
 
               return (
-                <img
-                  key={loc.id}
-                  src={IMAGE_MAP[loc.image]}
-                  alt={loc.name}
-                  className="absolute transition-opacity duration-300 ease-in-out"
-                  style={{
-                    left: d.x,
-                    top: d.y,
-                    width: d.w,
-                    height: d.h,
-                    transform: tFlip,
-                    transformOrigin: 'center',
-                    zIndex: Math.floor(buildingBaseY),
-                    opacity: isOccluded ? 0.5 : 1
-                  }}
-                />
+                <React.Fragment key={loc.id}>
+                  {showDebug && loc.interaction && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: loc.interaction.x + 10,
+                        top: loc.interaction.y + 25,
+                        width: loc.interaction.w,
+                        height: loc.interaction.h,
+                        transform: `rotate(${loc.interaction.rotation}deg)`,
+                        transformOrigin: 'center',
+                        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                        border: '2px solid rgba(255, 0, 0, 0.5)',
+                        zIndex: 2000,
+                        pointerEvents: 'none',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {loc.name}
+                    </div>
+                  )}
+                  <img
+                    src={IMAGE_MAP[loc.image]}
+                    alt={loc.name}
+                    className="absolute transition-opacity duration-300 ease-in-out"
+                    style={{
+                      left: d.x,
+                      top: d.y,
+                      width: d.w,
+                      height: d.h,
+                      transform: tFlip,
+                      transformOrigin: 'center',
+                      zIndex: Math.floor(buildingBaseY),
+                      opacity: isOccluded ? 0.5 : 1
+                    }}
+                  />
+                </React.Fragment>
               );
             })}
+
+            {/* Debug Interaction Point */}
+            {showDebug && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: position.x + 10,
+                  top: position.y + 45,
+                  width: 8,
+                  height: 8,
+                  backgroundColor: 'red',
+                  borderRadius: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 3000,
+                  pointerEvents: 'none',
+                  boxShadow: '0 0 10px red'
+                }}
+              />
+            )}
 
             {/* Player */}
             <div
@@ -836,7 +953,7 @@ function App() {
                 <p className="text-white text-xl mb-10 leading-relaxed font-bold">
                   Nhà học sinh ở cạnh nhà bạn!
                 </p>
-                <button 
+                <button
                   onClick={() => {
                     setShowTutorAlert(false);
                   }}
@@ -856,7 +973,7 @@ function App() {
                 <p className="text-white text-xl mb-10 leading-relaxed font-bold">
                   Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
                 </p>
-                <button 
+                <button
                   onClick={() => setShowShipperAlert(false)}
                   className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
                 >

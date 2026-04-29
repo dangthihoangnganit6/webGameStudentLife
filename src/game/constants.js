@@ -17,61 +17,97 @@ export const INGREDIENTS = [
   { id: 'veggie', name: 'Rau', price: 5000, energy: 12, cookTime: 5 }
 ];
 
+export const CANTEEN_MENU = [
+  { id: 'com_ga', name: 'Cơm gà', price: 35000, energy: 30 },
+  { id: 'bun_bo', name: 'Bún bò', price: 40000, energy: 35 },
+  { id: 'nuoc_ngot', name: 'Nước ngọt', price: 10000, energy: 5 },
+  { id: 'tra_sua', name: 'Trà sữa', price: 25000, energy: 15 }
+];
+
 export const LOCATIONS = [
   {
     id: 'school',
     name: 'Trường học',
     image: 'university.png',
-    display: { x: 864, y: 0, rotation: 0, w: 430, h: 434 },
+    display: { x: 894, y: 26, rotation: 0, w: 397, h: 401 },
     interaction: { x: 962.12, y: 211.57, rotation: -30, w: 107.1, h: 112.04 }
+  },
+  {
+    id: 'university',
+    name: 'Trường đại học',
+    image: 'university1.png',
+    display: { x: 882, y: -36, rotation: 0, w: 624, h: 406 }
   },
   {
     id: 'market',
     name: 'Siêu thị',
     image: 'supermarket.png',
-    display: { x: 340, y: 613, rotation: 0, w: 254.9, h: 250.82 },
-    interaction: { x: 444, y: 742, rotation: 30, w: 94, h: 51 }
+    display: { x: 302, y: 617, rotation: 0, w: 254.9, h: 250.82 },
+    interaction: { x: 392.14, y: 729.72, rotation: 30, w: 92.59, h: 72.94 }
   },
   {
     id: 'home',
     name: 'Nhà trọ',
     image: 'apartment.png',
     display: { x: 2, y: 568, rotation: 0, w: 442, h: 418 },
-    interaction: { x: 103, y: 833, rotation: 30, w: 188, h: 77.84 }
+    interaction: { x: 103, y: 833, rotation: 30, w: 188, h: 50.85 }
   },
   {
     id: 'work',
     name: 'Làm thêm',
     image: 'job_center.png',
-    display: { x: 587, y: -36, rotation: 0, w: 239, h: 241 },
-    interaction: { x: 707, y: 93.07, rotation: 30, w: 87.87, h: 65 }
+    display: { x: 598, y: -62, rotation: 0, w: 239, h: 241 },
+    interaction: { x: 718, y: 59, rotation: 30, w: 87.87, h: 65 }
   },
   {
     id: 'hospital',
     name: 'Bệnh viện',
     image: 'hospital.png',
     display: { x: 158.72, y: 59.44, rotation: 0, w: 412.02, h: 367.63 },
-    interaction: { x: 343, y: 245.79, rotation: 30, w: 134.13, h: 94.16 }
+    interaction: { x: 343, y: 240.63, rotation: 30, w: 144.45, h: 94.16 }
+  },
+  {
+    id: 'coffee',
+    name: 'Quán cà phê',
+    image: 'coffee.png',
+    display: { x: 78, y: 150, rotation: 0, w: 251, h: 212 }
   },
   {
     id: 'parents_home',
     name: 'Nhà (Bố mẹ)',
     image: 'home.png',
-    display: { x: 1120, y: 693, rotation: 180, w: 347, h: 331 },
-    interaction: { x: 1187, y: 833.36, rotation: -30, w: 111, h: 128.2 }
+    display: { x: 1178, y: 724, rotation: 180, w: 347, h: 331 },
+    interaction: { x: 1231.61, y: 875.54, rotation: -30, w: 131.55, h: 82.66 }
   },
   {
     id: 'stadium',
     name: 'Sân vận động',
     image: 'stadium.png',
-    display: { x: 431, y: 276, rotation: 0, w: 577, h: 377 }
+    display: { x: 445, y: 287, rotation: 0, w: 546, h: 357 },
+    interactions: [{ x: 529, y: 460, rotation: 30, w: 120.15, h: 118 },
+    { x: 727.13, y: 472.51, rotation: 30, w: 165.58, h: 74 }
+    ]
   },
   {
     id: 'student_house',
     name: 'Nhà học sinh',
     image: 'home_of_student.png',
-    display: { x: 826, y: 512, rotation: 0, w: 379, h: 342 },
-    interaction: { x: 919.29, y: 732.89, rotation: -30, w: 72.77, h: 62.05 }
+    display: { x: 1282, y: 318, rotation: 0, w: 315, h: 284 },
+    interaction: { x: 1327, y: 450, rotation: -30, w: 131.64, h: 84.37 }
+  },
+  {
+    id: 'sell_transport_station',
+    name: 'Trạm bán xe',
+    image: 'shop.png',
+    display: { x: 856, y: 431, rotation: 0, w: 509, h: 459 },
+    interaction: { x: 979, y: 708.7, rotation: -30, w: 116, h: 91.62 }
+  },
+  {
+    id: 'cantin',
+    name: 'Căng tin',
+    image: 'cantin.png',
+    display: { x: 534, y: 753, rotation: 0, w: 381, h: 274 },
+    interaction: { x: 577.33, y: 874.88, rotation: -30, w: 148.72, h: 105.02 }
   }
 ];
 

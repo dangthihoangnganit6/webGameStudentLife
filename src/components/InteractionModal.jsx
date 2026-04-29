@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, GraduationCap, CheckCircle, Wallet, Heart, User, Store, Home, Utensils, ShoppingBag, Briefcase } from 'lucide-react';
-import { HOUSING_TYPES, INGREDIENTS } from '../game/constants';
+import { X, GraduationCap, CheckCircle, Wallet, Heart, User, Store, Home, Utensils, ShoppingBag, Briefcase, Coffee } from 'lucide-react';
+import { HOUSING_TYPES, INGREDIENTS, CANTEEN_MENU } from '../game/constants';
 import workOptions from '../data/workOptions.json';
 
 const InteractionModal = ({ 
@@ -90,6 +90,33 @@ const InteractionModal = ({
               className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm uppercase"
             >
               Đóng 100k & Nhận việc
+            </button>
+            <button 
+              onClick={() => setInteractionStep('sub_menu')}
+              className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all uppercase"
+            >
+              Không
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (interactionStep === 'ask_waiter') {
+      return (
+        <div className="text-center">
+          <h3 className="text-white font-black text-2xl uppercase mb-4">Làm Căng Tin</h3>
+          <div className="text-slate-300 text-lg mb-8 leading-relaxed bg-slate-900/50 block p-6 rounded-2xl border border-white/5 space-y-2">
+            <div>Thu nhập: <span className="text-emerald-400 font-bold">50.000đ / lần làm</span></div>
+            <div>Tiêu tốn: <span className="text-amber-400 font-bold">10 Năng lượng</span>/lần</div>
+            <div className="pt-2 mt-2 border-t border-white/10">Yêu cầu: <span className="text-indigo-400 font-bold">Đến Căng tin để làm việc</span></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => onAction('accept_waiter')}
+              className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm uppercase"
+            >
+              Nhận việc ngay
             </button>
             <button 
               onClick={() => setInteractionStep('sub_menu')}
@@ -555,6 +582,99 @@ const InteractionModal = ({
     }
 
     // --- LOGIC LÀM VIÊC ---
+    // --- LOGIC CĂNG TIN ---
+    if (location.id === 'cantin') {
+      // 1. Nếu đã nhận việc và chưa chọn module nào cụ thể
+      if (playerStats.hasWaiterJob && interactionStep === 'sub_menu') {
+        return (
+          <div className="space-y-6 text-center">
+            <h3 className="text-white font-black text-2xl uppercase mb-8 tracking-widest">Căng tin</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setInteractionStep('canteen_work')}
+                className="py-12 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-3xl transition-all shadow-xl active:scale-95 flex flex-col items-center justify-center gap-4"
+              >
+                <Utensils className="w-12 h-12" />
+                <span className="text-xl uppercase">Phục vụ</span>
+              </button>
+              <button 
+                onClick={() => setInteractionStep('canteen_menu')}
+                className="py-12 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-3xl transition-all shadow-xl active:scale-95 flex flex-col items-center justify-center gap-4"
+              >
+                <Coffee className="w-12 h-12" />
+                <span className="text-xl uppercase">Mua đồ</span>
+              </button>
+            </div>
+            <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest mt-8">Rời đi</button>
+          </div>
+        );
+      }
+
+      // 2. Module Làm việc
+      if (interactionStep === 'canteen_work') {
+        return (
+          <div className="space-y-6 text-center">
+            <h3 className="text-white font-black text-2xl uppercase mb-4 tracking-widest">Làm việc tại Căng tin</h3>
+            <div className="bg-emerald-950/20 p-6 rounded-2xl border border-emerald-500/20 mb-6">
+              <Utensils className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
+              <p className="text-slate-300 text-lg font-bold">Bạn đã sẵn sàng ca làm việc chưa?</p>
+              <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">Tiền công: 50.000đ / 30 giây phục vụ</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => onAction('work_waiter')}
+                className="py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl transition-all shadow-xl active:scale-95 uppercase"
+              >
+                Bắt đầu làm
+              </button>
+              <button 
+                onClick={() => setInteractionStep('sub_menu')}
+                className="py-5 bg-slate-800 hover:bg-slate-700 text-slate-400 font-black rounded-xl transition-all uppercase"
+              >
+                Trở lại
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // 3. Module Gọi món (Mặc định khi chưa nhận việc HOẶC khi đã chọn 'Mua đồ')
+      return (
+        <div className="space-y-6">
+          <div className="bg-indigo-950/20 p-6 rounded-2xl border border-indigo-500/20 text-center">
+            <Coffee className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+            <h3 className="text-white font-black text-xl uppercase italic tracking-tighter">Gọi món tại Căng tin</h3>
+            <p className="text-slate-400 text-xs mt-1">Sạc lại năng lượng với những món ăn ngon lành.</p>
+          </div>
+
+          <div className="space-y-3">
+            {CANTEEN_MENU.map(item => (
+              <button
+                key={item.id}
+                onClick={() => onAction('buy_canteen_food', item)}
+                className="w-full p-4 bg-slate-800/50 hover:bg-indigo-600 group rounded-2xl border border-white/5 transition-all text-left flex justify-between items-center"
+              >
+                <div>
+                  <div className="text-white font-bold group-hover:text-white">{item.name}</div>
+                  <div className="text-[10px] text-slate-500 group-hover:text-indigo-200 uppercase">
+                    +{item.energy} Hồi năng lượng | Ăn tại chỗ
+                  </div>
+                </div>
+                <div className="text-emerald-400 font-black text-xl group-hover:text-white">{item.price.toLocaleString()}đ</div>
+              </button>
+            ))}
+          </div>
+          
+          <button 
+            onClick={() => playerStats.hasWaiterJob ? setInteractionStep('sub_menu') : onClose()} 
+            className="w-full py-3 text-slate-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors border-t border-white/5 pt-6 text-center"
+          >
+            {playerStats.hasWaiterJob ? 'Trở lại' : 'Rời đi'}
+          </button>
+        </div>
+      );
+    }
+
     if (location.id === 'work') {
       return (
         <div className="space-y-6">
@@ -568,29 +688,36 @@ const InteractionModal = ({
             {workOptions.map(job => {
               const isTutor = job.id === 'job_tutor';
               const isShipper = job.id === 'job_shipper';
-              const alreadyGot = isTutor && playerStats.hasTutorJob;
+              const isWaiter = job.id === 'job_waiter';
+              const alreadyGotTutor = isTutor && playerStats.hasTutorJob;
+              const alreadyGotWaiter = isWaiter && playerStats.hasWaiterJob;
+              
+              const disabled = alreadyGotTutor || alreadyGotWaiter;
+
               return (
               <button
                 key={job.id}
-                disabled={alreadyGot}
+                disabled={disabled}
                 onClick={() => {
-                  if (isTutor && !alreadyGot) {
+                  if (isTutor && !alreadyGotTutor) {
                     setInteractionStep('ask_tutor');
                   } else if (isShipper) {
                     setInteractionStep('ask_shipper');
+                  } else if (isWaiter && !alreadyGotWaiter) {
+                    setInteractionStep('ask_waiter');
                   } else {
                     onAction('work', job);
                   }
                 }}
                 className={`w-full p-4 group rounded-2xl border transition-all text-left flex justify-between items-center ${
-                   alreadyGot ? 'bg-slate-800/80 border-rose-500/30 opacity-50 cursor-not-allowed' : 'bg-slate-800/50 hover:bg-rose-600 border-white/5'
+                   disabled ? 'bg-slate-800/80 border-rose-500/30 opacity-50 cursor-not-allowed' : 'bg-slate-800/50 hover:bg-rose-600 border-white/5'
                 }`}
               >
                 <div>
-                  <div className={`font-bold ${alreadyGot ? 'text-slate-500' : 'text-white group-hover:text-white'}`}>
-                    {job.name} {alreadyGot && '(Đã nhận)'}
+                  <div className={`font-bold ${disabled ? 'text-slate-500' : 'text-white group-hover:text-white'}`}>
+                    {job.name} {(alreadyGotTutor || alreadyGotWaiter) && '(Đã nhận)'}
                   </div>
-                  <div className={`text-[10px] uppercase ${alreadyGot ? 'text-slate-600' : 'text-slate-500 group-hover:text-rose-200'}`}>
+                  <div className={`text-[10px] uppercase ${disabled ? 'text-slate-600' : 'text-slate-500 group-hover:text-rose-200'}`}>
                     Tiêu tốn: {job.exhaustion} Năng lượng
                   </div>
                 </div>

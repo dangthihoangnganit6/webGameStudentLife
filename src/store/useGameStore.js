@@ -26,6 +26,7 @@ const useGameStore = create((set) => ({
     rentedRoom: null,
     rentTimer: 0,
     hasTutorJob: false,
+    hasWaiterJob: false,
     isExpelled: false,
     termStartTime: null,
     allowanceAccumulator: 0,
@@ -52,6 +53,9 @@ const useGameStore = create((set) => ({
   
   isTutoring: false,
   tutoringProgress: 0,
+  
+  isWaiting: false,
+  waitingProgress: 0,
   
   // School logic state
   isClassStarting: false,
@@ -159,6 +163,7 @@ const useGameStore = create((set) => ({
         pendingParentSupport: false,
         hasClaimedParentSupport: false,
         hasTutorJob: false,
+        hasWaiterJob: false,
         totalCredits: 0,
         tuitionDue: 0,
         termStartTime: now,
@@ -197,6 +202,7 @@ const useGameStore = create((set) => ({
         pendingParentSupport: false,
         hasClaimedParentSupport: false,
         hasTutorJob: false,
+        hasWaiterJob: false,
         totalCredits: 0,
         tuitionDue: 0,
         inventory: [],
@@ -227,6 +233,8 @@ const useGameStore = create((set) => ({
       hospitalizationProgress: 0,
       isTutoring: false,
       tutoringProgress: 0,
+      isWaiting: false,
+      waitingProgress: 0,
       position: { x: 1114, y: 864 },
       direction: 'down',
       currentScene: 'map',
@@ -248,6 +256,9 @@ const useGameStore = create((set) => ({
   
   setTutoring: (tutoring) => set({ isTutoring: tutoring }),
   setTutoringProgress: (progress) => set({ tutoringProgress: progress }),
+  
+  setWaiting: (waiting) => set({ isWaiting: waiting }),
+  setWaitingProgress: (progress) => set({ waitingProgress: progress }),
   
   addToInventory: (item) => set((state) => ({
     playerStats: {
