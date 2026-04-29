@@ -63,6 +63,14 @@ const isPointInRotatedRect = (px, py, rect) => {
 };
 
 function App() {
+  const taskIntervalRef = React.useRef(null);
+  
+  const clearActiveTasks = useCallback(() => {
+    if (taskIntervalRef.current) {
+      clearInterval(taskIntervalRef.current);
+      taskIntervalRef.current = null;
+    }
+  }, []);
   const {
     position, updatePosition,
     direction, setDirection,
@@ -252,6 +260,15 @@ function App() {
 
   const handleExhaustedOk = () => {
     setShowExhaustedPopup(false);
+    
+    // Ngừng mọi thứ đang chạy
+    clearActiveTasks();
+    setCooking(false);
+    setSleeping(false);
+    setTutoring(false);
+    setWaiting(false);
+    closeModal();
+
     const newCount = playerStats.hospitalCount + 1;
     notify(`Bạn đã ngất xỉu lần ${newCount}! Bạn được đưa vào Bệnh viện điều trị cưỡng chế.`);
     updatePlayerStats({ hospitalCount: newCount });
@@ -259,13 +276,13 @@ function App() {
     setHospitalizationProgress(0);
     updatePosition({ x: 158.72, y: 59.44 }); // True hospital coordinates from LOCATIONS
 
-    const therapyTime = 60; // 1 minute as requested
+    const therapyTime = 60; // 1 minute
     let therapyCurrent = 0;
-    const hospitalInterval = setInterval(() => {
+    taskIntervalRef.current = setInterval(() => {
       therapyCurrent += 1;
       const prog = (therapyCurrent / therapyTime) * 100;
       if (prog >= 100) {
-        clearInterval(hospitalInterval);
+        clearActiveTasks();
         setHospitalized(false);
         updateStats({ energy: 30 });
         notify("Điều trị thành công! (+30 Energy)");
@@ -491,11 +508,12 @@ function App() {
 
         const totalTime = item.cookTime; // in seconds for demo
         let current = 0;
-        const cookInterval = setInterval(() => {
+        clearActiveTasks();
+        taskIntervalRef.current = setInterval(() => {
           current += 0.1;
           const prog = (current / totalTime) * 100;
           if (prog >= 100) {
-            clearInterval(cookInterval);
+            clearActiveTasks();
             setCooking(false);
             const success = Math.random() < 0.8;
             if (success) {
@@ -516,11 +534,12 @@ function App() {
 
         const totalSleepTime = 30; // 30 seconds as requested
         let sleepCurrent = 0;
-        const sleepInterval = setInterval(() => {
+        clearActiveTasks();
+        taskIntervalRef.current = setInterval(() => {
           sleepCurrent += 0.1;
           const prog = (sleepCurrent / totalSleepTime) * 100;
           if (prog >= 100) {
-            clearInterval(sleepInterval);
+            clearActiveTasks();
             setSleeping(false);
             updateStats({ energy: Math.min(100, stats.energy + 30) });
             notify("Bạn đã tỉnh táo hơn sau giấc ngủ! (+30 Energy)");
@@ -574,11 +593,12 @@ function App() {
 
           const tutorTotalTime = 60; // 60s real time
           let tutorCurrent = 0;
-          const tutInterval = setInterval(() => {
+          clearActiveTasks();
+          taskIntervalRef.current = setInterval(() => {
             tutorCurrent += 0.1;
             const prog = (tutorCurrent / tutorTotalTime) * 100;
             if (prog >= 100) {
-              clearInterval(tutInterval);
+              clearActiveTasks();
               setTutoring(false);
               updateStats(prev => ({ money: prev.money + 100000, energy: Math.max(0, prev.energy - 10) }));
               advanceTime(1);
@@ -599,11 +619,12 @@ function App() {
 
           const waiterTotalTime = 30; // 30s
           let waiterCurrent = 0;
-          const waitInterval = setInterval(() => {
+          clearActiveTasks();
+          taskIntervalRef.current = setInterval(() => {
             waiterCurrent += 0.1;
             const prog = (waiterCurrent / waiterTotalTime) * 100;
             if (prog >= 100) {
-              clearInterval(waitInterval);
+              clearActiveTasks();
               setWaiting(false);
               updateStats(prev => ({ money: prev.money + 50000, energy: Math.max(0, prev.energy - 10) }));
               notify(`Bạn đã hoàn thành ca làm và nhận được 50.000đ!`);
