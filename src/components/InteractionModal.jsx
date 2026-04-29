@@ -637,8 +637,85 @@ const InteractionModal = ({
           </div>
         );
       }
+    }
 
-      // 3. Module Gọi món (Mặc định khi chưa nhận việc HOẶC khi đã chọn 'Mua đồ')
+    // --- LOGIC TRẠM BÁN XE ---
+    if (location.id === 'sell_transport_station') {
+      return (
+        <div className="space-y-6">
+          <div className="bg-emerald-950/20 p-6 rounded-2xl border border-emerald-500/20 text-center">
+            <Store className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
+            <h3 className="text-white font-black text-xl uppercase italic">Trạm bán xe</h3>
+            <p className="text-slate-400 text-xs mt-1">Nâng cấp phương tiện đi lại của bạn.</p>
+          </div>
+
+          <div className="space-y-3">
+             <button
+                disabled={playerStats.hasBicycle}
+                onClick={() => onAction('buy_bicycle')}
+                className={`w-full p-6 group rounded-3xl border transition-all text-left flex justify-between items-center ${
+                  playerStats.hasBicycle ? 'bg-slate-900 border-white/5 opacity-50 cursor-not-allowed' : 'bg-slate-800/50 hover:bg-emerald-600 border-white/10'
+                }`}
+              >
+                <div>
+                  <div className="text-white font-black text-xl uppercase tracking-tight">Xe đạp {playerStats.hasBicycle && '(Đã sở hữu)'}</div>
+                  <div className="text-[10px] text-slate-500 group-hover:text-emerald-200 uppercase font-bold">Di chuyển nhanh hơn | Sprite 2 khung hình</div>
+                </div>
+                <div className="text-emerald-400 font-black text-2xl tracking-tighter">500.000đ</div>
+              </button>
+          </div>
+          
+          <button onClick={onClose} className="w-full py-4 text-slate-500 text-xs uppercase font-black tracking-widest hover:text-white transition-colors border-t border-white/5 pt-8 text-center">Để sau</button>
+        </div>
+      );
+    }
+
+    // --- LOGIC BÃI ĐỖ XE ---
+    if (location.id === 'parking') {
+      return (
+        <div className="space-y-6 text-center">
+          <div className="bg-slate-950/50 p-8 rounded-[40px] border border-white/5 mb-6">
+             <h3 className="text-white font-black text-3xl uppercase italic tracking-tighter mb-2">Bãi đỗ xe</h3>
+             <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Nơi an toàn cho phương tiện của bạn</p>
+          </div>
+
+          {playerStats.isRidingBicycle ? (
+            <div className="space-y-4">
+              <div className="bg-orange-950/20 p-6 rounded-2xl border border-orange-500/20">
+                <p className="text-orange-400 font-bold">Phí gửi xe: 10.000đ/lượt</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => onAction('park_bike')}
+                  className="py-6 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-2xl transition-all shadow-xl uppercase text-xl"
+                >
+                  Gửi xe
+                </button>
+                <button onClick={onClose} className="py-6 bg-slate-800 text-slate-400 font-black rounded-2xl transition-all uppercase">Bỏ qua</button>
+              </div>
+            </div>
+          ) : playerStats.hasBicycle ? (
+             <div className="space-y-4">
+               <button 
+                  onClick={() => onAction('take_bike')}
+                  className="w-full py-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[32px] transition-all shadow-[0_20px_40px_rgba(16,185,129,0.2)] uppercase text-2xl flex items-center justify-center gap-4"
+                >
+                  Lấy xe
+                </button>
+                <button onClick={onClose} className="w-full py-3 text-slate-500 text-xs font-bold uppercase tracking-[0.2em]">Rời đi</button>
+             </div>
+          ) : (
+            <div className="py-12 bg-slate-900/50 rounded-3xl border border-dashed border-white/10">
+              <p className="text-slate-500 italic font-medium">Bạn chưa có phương tiện nào để gửi ở đây.</p>
+              <p className="text-indigo-400 text-xs font-bold mt-2 uppercase tracking-widest">Hãy đến Trạm bán xe để mua!</p>
+              <button onClick={onClose} className="mt-8 px-10 py-3 bg-white/5 hover:bg-white/10 text-white font-black rounded-xl transition-all text-xs uppercase">Đã hiểu</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (location.id === 'cantin') {
       return (
         <div className="space-y-6">
           <div className="bg-indigo-950/20 p-6 rounded-2xl border border-indigo-500/20 text-center">

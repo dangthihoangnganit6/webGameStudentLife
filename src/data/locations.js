@@ -2,7 +2,7 @@ import { LOCATIONS as CONST_LOCATIONS } from '../game/constants';
 
 // Merge layout tĩnh với logic tương tác và đảo ngược hướng xoay
 export const LOCATIONS = CONST_LOCATIONS.map(loc => {
-  // 1. Tạo bản sao của interaction và đảo dấu rotation nếu có
+  // 1. Xử lý interaction singular
   const updatedInteraction = loc.interaction
     ? {
       ...loc.interaction,
@@ -10,11 +10,20 @@ export const LOCATIONS = CONST_LOCATIONS.map(loc => {
     }
     : null;
 
-  // 2. Xử lý riêng cho trường hợp 'school'
+  // 2. Xử lý interactions plural (nhiều vùng va chạm)
+  const updatedInteractions = loc.interactions
+    ? loc.interactions.map(inter => ({
+        ...inter,
+        rotation: inter.rotation ? -inter.rotation : 0
+      }))
+    : null;
+
+  // 3. Xử lý logic riêng cho 'school'
   if (loc.id === 'school') {
     return {
       ...loc,
-      interaction: updatedInteraction, // Ghi đè interaction đã đảo dấu
+      interaction: updatedInteraction,
+      interactions: updatedInteractions,
       options: {
         credits: [
           { label: '15 Tín chỉ', value: 15 },
@@ -28,9 +37,9 @@ export const LOCATIONS = CONST_LOCATIONS.map(loc => {
     };
   }
 
-  // 3. Trả về các địa điểm khác với interaction đã đảo dấu
   return {
     ...loc,
-    interaction: updatedInteraction
+    interaction: updatedInteraction,
+    interactions: updatedInteractions
   };
 });

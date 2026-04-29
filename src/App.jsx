@@ -28,6 +28,9 @@ import spriteRightImage from './assets/sprite_right.png';
 import stadiumImage from './assets/stadium.png';
 import homeOfStudentImage from './assets/home_of_student.png';
 import cantinImage from './assets/cantin.png';
+import parkImage from './assets/park.png';
+import bikeDownImage from './assets/bike_down.png';
+import bikeUpImage from './assets/bike_up.png';
 import shopImage from './assets/shop.png';
 import coffeeImage from './assets/coffee.png';
 import university1Image from './assets/university1.png';
@@ -35,6 +38,7 @@ import university1Image from './assets/university1.png';
 const IMAGE_MAP = {
   'hospital.png': hospitalImage,
   'stadium.png': stadiumImage,
+  'park.png': parkImage,
   'university.png': universityImage,
   'apartment.png': apartmentImage,
   'supermarket.png': supermarketImage,
@@ -340,18 +344,31 @@ function App() {
         if (moveKey.includes('Left')) setDirection('left');
         if (moveKey.includes('Right')) setDirection('right');
 
-        const nextPos = calculateNextMove(state.position, moveKey, MAP_CONFIG.CHARACTER_SPEED, { width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }, scaleFactor);
+        const speed = state.playerStats.isRidingBicycle ? MAP_CONFIG.CHARACTER_SPEED * 1.5 : MAP_CONFIG.CHARACTER_SPEED;
+        const nextPos = calculateNextMove(state.position, moveKey, speed, { width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }, scaleFactor);
         updatePosition(nextPos);
 
         const nearby = LOCATIONS.find(loc => {
-          if (!loc.interaction) return false;
+          if (!loc.interaction && !loc.interactions) return false;
           // Coi như mô hình (không thể vào) nếu chưa nhận việc gia sư
+          if (loc.id === 'school' && !state.playerStats.hasTutorJob) return false;
           if (loc.id === 'student_house' && !state.playerStats.hasTutorJob) return false;
-          return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 25, {
-            ...loc.interaction,
-            x: loc.interaction.x + 10,
-            y: loc.interaction.y + 25
-          });
+          
+          const checkCollision = (interaction) => {
+            return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 50, {
+              ...interaction,
+              x: interaction.x + 10,
+              y: interaction.y + 25
+            });
+          };
+
+          if (loc.interactions && loc.interactions.length > 0) {
+            return loc.interactions.some(checkCollision);
+          }
+          if (loc.interaction) {
+            return checkCollision(loc.interaction);
+          }
+          return false;
         });
 
         if (nearby) {
@@ -654,6 +671,31 @@ function App() {
           notify("Bạn không có đủ 100.000đ để khám tổng quát!");
         }
         break;
+      case 'buy_bicycle':
+        if (stats.money >= 500000) {
+          updateStats({ money: stats.money - 500000 });
+          updatePlayerStats({ hasBicycle: true, isRidingBicycle: true });
+          notify("Bạn đã mua xe đạp mới! Hãy tận hưởng những vòng quay.");
+          closeModal();
+        } else {
+          notify("Bạn không đủ tiền mua xe đạp!");
+        }
+        break;
+      case 'park_bike':
+        if (stats.money >= 10000) {
+          updateStats({ money: stats.money - 10000 });
+          updatePlayerStats({ isRidingBicycle: false });
+          notify("Đã gửi xe xong! Phí: 10.000đ");
+          closeModal();
+        } else {
+          notify("Bạn không đủ tiền gửi xe!");
+        }
+        break;
+      case 'take_bike':
+        updatePlayerStats({ isRidingBicycle: true });
+        notify("Đã lấy xe!");
+        closeModal();
+        break;
       case 'pay_hospital_bill':
         if (stats.money >= playerStats.activeMedicalBill) {
           updateStats({ money: stats.money - playerStats.activeMedicalBill });
@@ -840,26 +882,34 @@ function App() {
 
               return (
                 <React.Fragment key={loc.id}>
-                  {showDebug && loc.interaction && (
+                  {showDebug && (loc.interaction ? [loc.interaction] : loc.interactions || []).map((inter, idx) => (
                     <div
+                      key={idx}
                       style={{
                         position: 'absolute',
-                        left: loc.interaction.x + 10,
-                        top: loc.interaction.y + 25,
-                        width: loc.interaction.w,
-                        height: loc.interaction.h,
-                        transform: `rotate(${loc.interaction.rotation}deg)`,
+                        left: inter.x + 10,
+                        top: inter.y + 25,
+                        width: inter.w,
+                        height: inter.h,
+                        transform: `rotate(${inter.rotation}deg)`,
                         transformOrigin: 'center',
                         backgroundColor: 'rgba(255, 0, 0, 0.3)',
                         border: '2px solid rgba(255, 0, 0, 0.5)',
                         zIndex: 2000,
                         pointerEvents: 'none',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '8px',
+                        fontWeight: 'black',
+                        textAlign: 'center'
                       }}
                     >
                       {loc.name}
                     </div>
-                  )}
+                  ))}
                   <img
                     src={IMAGE_MAP[loc.image]}
                     alt={loc.name}
@@ -871,7 +921,7 @@ function App() {
                       height: d.h,
                       transform: tFlip,
                       transformOrigin: 'center',
-                      zIndex: Math.floor(buildingBaseY),
+                      zIndex: isOccluded ? 10000 + Math.floor(buildingBaseY) : Math.floor(buildingBaseY),
                       opacity: isOccluded ? 0.5 : 1
                     }}
                   />
@@ -885,7 +935,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: position.x + 10,
-                  top: position.y + 45,
+                  top: position.y + 50,
                   width: 8,
                   height: 8,
                   backgroundColor: 'red',
@@ -903,7 +953,7 @@ function App() {
               className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
               style={{
                 width: 20, height: 50, left: position.x, top: position.y,
-                zIndex: Math.floor(position.y + 50)
+                zIndex: 5000
               }}
             >
               {/* Bóng đổ (Shadow) dưới chân nhân vật */}
@@ -913,20 +963,27 @@ function App() {
               <div
                 className="absolute bottom-0 h-full overflow-hidden"
                 style={{
-                  width: '40px', // Khung hiển thị ảnh dãn ra 40px (rộng gấp đôi hitbox)
+                  width: playerStats.isRidingBicycle ? '60px' : '40px', 
                   left: '50%',
-                  marginLeft: '-20px', // Giãn đều sang 2 bên để giữ tâm chuẩn xác
-                  transform: `scaleX(${direction === 'left' || direction === 'down' ? -1 : 1})`
+                  marginLeft: playerStats.isRidingBicycle ? '-30px' : '-20px', 
+                  transform: `scaleX(${
+                    playerStats.isRidingBicycle 
+                      ? (direction === 'left' || direction === 'right' ? -1 : 1)
+                      : (direction === 'left' || direction === 'down' ? -1 : 1)
+                  })`
                 }}
               >
                 <img
-                  src={direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage}
+                  src={playerStats.isRidingBicycle 
+                    ? (direction === 'right' || direction === 'down' ? bikeDownImage : bikeUpImage)
+                    : (direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage)
+                  }
                   alt="Character"
                   className="absolute top-0 left-0 max-w-none pointer-events-none"
                   style={{
                     height: '100%',
-                    width: '400%', // Hiển thị 1/4 ảnh tại một thời điểm
-                    transform: `translateX(-${frame * 25}%)`
+                    width: playerStats.isRidingBicycle ? '200%' : '400%', 
+                    transform: `translateX(-${frame * (playerStats.isRidingBicycle ? 50 : 25)}%)`
                   }}
                 />
               </div>

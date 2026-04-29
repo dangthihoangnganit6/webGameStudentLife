@@ -39,7 +39,9 @@ const useGameStore = create((set) => ({
       amount: 0,
       status: 'none', // 'none' | 'pending' | 'overdue' | 'paid'
       timeLeftToPay: 0,
-    }
+    },
+    hasBicycle: false,
+    isRidingBicycle: false,
   },
   
   isCooking: false,
@@ -164,6 +166,8 @@ const useGameStore = create((set) => ({
         hasClaimedParentSupport: false,
         hasTutorJob: false,
         hasWaiterJob: false,
+        hasBicycle: false,
+        isRidingBicycle: false,
         totalCredits: 0,
         tuitionDue: 0,
         termStartTime: now,
@@ -203,6 +207,8 @@ const useGameStore = create((set) => ({
         hasClaimedParentSupport: false,
         hasTutorJob: false,
         hasWaiterJob: false,
+        hasBicycle: false,
+        isRidingBicycle: false,
         totalCredits: 0,
         tuitionDue: 0,
         inventory: [],

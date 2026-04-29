@@ -80,10 +80,10 @@ export const LOCATIONS = [
     interaction: { x: 1231.61, y: 875.54, rotation: -30, w: 131.55, h: 82.66 }
   },
   {
-    id: 'stadium',
-    name: 'Sân vận động',
-    image: 'stadium.png',
-    display: { x: 445, y: 287, rotation: 0, w: 546, h: 357 },
+    id: 'parking',
+    name: 'Bãi đỗ xe',
+    image: 'park.png',
+    display: { x: 392, y: 287, rotation: 0, w: 618, h: 404 },
     interactions: [{ x: 529, y: 460, rotation: 30, w: 120.15, h: 118 },
     { x: 727.13, y: 472.51, rotation: 30, w: 165.58, h: 74 }
     ]
