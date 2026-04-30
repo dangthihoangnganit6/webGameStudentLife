@@ -816,7 +816,7 @@ const InteractionModal = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[1000] flex items-center justify-center p-8 ${location.id !== 'market' ? 'bg-slate-950/85 backdrop-blur-md' : ''}`}>
+    <div className={`absolute inset-0 w-full h-full z-[1000] flex items-center justify-center p-8 ${location.id !== 'market' ? 'bg-slate-950/85 backdrop-blur-md' : ''}`}>
       <div 
         className="w-full max-w-3xl bg-slate-950 border-[3px] border-white/10 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}

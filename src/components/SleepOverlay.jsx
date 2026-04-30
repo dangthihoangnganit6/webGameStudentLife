@@ -3,7 +3,7 @@ import { Moon } from 'lucide-react';
 
 const SleepOverlay = ({ progress }) => {
   return (
-    <div className="fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center">
+    <div className="absolute inset-0 w-full h-full z-[10000] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center">
       <div className="text-center">
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full scale-150 animate-pulse"></div>

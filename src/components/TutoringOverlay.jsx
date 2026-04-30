@@ -3,7 +3,7 @@ import { BookOpen } from 'lucide-react';
 
 const TutoringOverlay = ({ progress }) => {
   return (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[10000] flex flex-col items-center justify-center p-6 text-center">
+    <div className="absolute inset-0 w-full h-full bg-slate-900/90 backdrop-blur-xl z-[10000] flex flex-col items-center justify-center p-6 text-center">
       <div className="relative mb-12 animate-bounce">
         <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 scale-150 rounded-full"></div>
         <BookOpen className="w-24 h-24 text-indigo-500 relative z-10" />

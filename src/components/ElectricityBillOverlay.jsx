@@ -5,7 +5,7 @@ const ElectricityBillOverlay = ({ bill, onPay, money }) => {
   if (bill.status === 'none' || bill.status === 'paid') return null;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
+    <div className="absolute inset-0 w-full h-full z-[2000] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
       <div className="glass-morphism p-12 w-full max-w-2xl border-[3px] border-amber-500/40 bg-slate-950/95 shadow-[0_0_100px_rgba(245,158,11,0.15)] rounded-[40px]">
         <div className="flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-amber-500/20 animate-pulse">

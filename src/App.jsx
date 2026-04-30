@@ -1,55 +1,10 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import useGameStore from './store/useGameStore';
 import useKeyboard from './hooks/useKeyboard';
 import { calculateNextMove, getDistance } from './game/movement';
 import { MAP_CONFIG } from './game/constants';
 import { LOCATIONS } from './data/locations';
-import InteractionModal from './components/InteractionModal';
-import AttendanceTimer from './components/AttendanceTimer';
-import CookingOverlay from './components/CookingOverlay';
-import SleepOverlay from './components/SleepOverlay';
-import HospitalOverlay from './components/HospitalOverlay';
-import TutoringOverlay from './components/TutoringOverlay';
-import TermTimer from './components/TermTimer';
-import ElectricityBillOverlay from './components/ElectricityBillOverlay';
-import GameOver from './components/GameOver';
-import WaitingOverlay from './components/WaitingOverlay';
-import { X, Activity } from 'lucide-react';
-
-import pathImage from './assets/path.png';
-import hospitalImage from './assets/hospital.png';
-import universityImage from './assets/university.png';
-import apartmentImage from './assets/apartment.png';
-import supermarketImage from './assets/supermarket.png';
-import homeImage from './assets/home.png';
-import jobCenterImage from './assets/job_center.png';
-import spriteUpImage from './assets/sprite_up.png';
-import spriteRightImage from './assets/sprite_right.png';
-import stadiumImage from './assets/stadium.png';
-import homeOfStudentImage from './assets/home_of_student.png';
-import cantinImage from './assets/cantin.png';
-import parkImage from './assets/park.png';
-import bikeDownImage from './assets/bike_down.png';
-import bikeUpImage from './assets/bike_up.png';
-import shopImage from './assets/shop.png';
-import coffeeImage from './assets/coffee.png';
-import university1Image from './assets/university1.png';
-
-const IMAGE_MAP = {
-  'hospital.png': hospitalImage,
-  'stadium.png': stadiumImage,
-  'park.png': parkImage,
-  'university.png': universityImage,
-  'apartment.png': apartmentImage,
-  'supermarket.png': supermarketImage,
-  'home.png': homeImage,
-  'job_center.png': jobCenterImage,
-  'home_of_student.png': homeOfStudentImage,
-  'cantin.png': cantinImage,
-  'shop.png': shopImage,
-  'coffee.png': coffeeImage,
-  'university1.png': university1Image
-};
+import GameLayout from './components/GameLayout';
 
 const isPointInRotatedRect = (px, py, rect) => {
   const { x, y, w, h, rotation } = rect;
@@ -68,7 +23,7 @@ const isPointInRotatedRect = (px, py, rect) => {
 
 function App() {
   const taskIntervalRef = React.useRef(null);
-  
+
   const clearActiveTasks = useCallback(() => {
     if (taskIntervalRef.current) {
       clearInterval(taskIntervalRef.current);
@@ -123,22 +78,27 @@ function App() {
     }
     const animTimer = setInterval(() => {
       setFrame(prev => (prev + 1) % 4);
-    }, 150); // 150ms per frame
+    }, playerStats.isRidingBicycle ? 100 : 150); // Faster animation for bicycle
     return () => clearInterval(animTimer);
-  }, [isMoving]);
+  }, [isMoving, playerStats.isRidingBicycle]);
 
   const DESIGN_WIDTH = 1440;
   const DESIGN_HEIGHT = 1024;
 
   const [scaleFactor, setScaleFactor] = useState(1);
+  const gameContainerRef = useRef(null);
 
   useEffect(() => {
-    const handleResize = () => {
-      setScaleFactor(Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT));
-    };
-    handleResize(); // Initialize on mount
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    if (!gameContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        // Use Math.max to simulate object-fit: cover for the game container
+        setScaleFactor(Math.max(width / DESIGN_WIDTH, height / DESIGN_HEIGHT));
+      }
+    });
+    observer.observe(gameContainerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   // Keyboard shortcut for Debug Hitboxes (H key)
@@ -264,7 +224,7 @@ function App() {
 
   const handleExhaustedOk = () => {
     setShowExhaustedPopup(false);
-    
+
     // Ngừng mọi thứ đang chạy
     clearActiveTasks();
     setCooking(false);
@@ -351,15 +311,23 @@ function App() {
         const nearby = LOCATIONS.find(loc => {
           if (!loc.interaction && !loc.interactions) return false;
           // Coi như mô hình (không thể vào) nếu chưa nhận việc gia sư
-          if (loc.id === 'school' && !state.playerStats.hasTutorJob) return false;
           if (loc.id === 'student_house' && !state.playerStats.hasTutorJob) return false;
-          
+
           const checkCollision = (interaction) => {
-            return isPointInRotatedRect(nextPos.x + 10, nextPos.y + 50, {
+            const interactRect = {
               ...interaction,
               x: interaction.x + 10,
               y: interaction.y + 25
-            });
+            };
+
+            const pts = state.playerStats.isRidingBicycle ? [-20, -10, 0, 10, 20].map(r => ({
+              px: nextPos.x + 10 + r * 0.866, // cos(30deg)
+              py: nextPos.y + 50 + r * 0.5    // sin(30deg)
+            })) : [
+              { px: nextPos.x + 10, py: nextPos.y + 50 }
+            ];
+
+            return pts.some(p => isPointInRotatedRect(p.px, p.py, interactRect));
           };
 
           if (loc.interactions && loc.interactions.length > 0) {
@@ -712,378 +680,18 @@ function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-slate-950 flex flex-row overflow-hidden font-sans">
-
-      {/* LEFT SIDEBAR (Thông số) */}
-      <div className="flex-1 min-w-[280px] bg-slate-900 border-r border-slate-800 p-6 flex flex-col gap-6 z-50 overflow-y-auto">
-        <h2 className="text-xl font-black text-white/50 uppercase tracking-widest mb-2 font-mono">Thông số</h2>
-
-        {/* Sinh viên & Tài khoản */}
-        <div className="glass-morphism bg-white/5 p-6 rounded-[28px] border border-white/10 flex flex-col gap-5 text-white shadow-xl">
-          <div>
-            <span className="text-xs font-black uppercase opacity-50 block tracking-widest mb-1">Sinh viên</span>
-            <span className="text-xl font-black">{playerStats.isEnrolled ? "Đang đi học" : "Chưa nhập học"}</span>
-          </div>
-          <div className="w-full h-[2px] bg-white/10"></div>
-          <div>
-            <span className="text-xs font-black uppercase opacity-50 block tracking-widest mb-1">Tài khoản</span>
-            <span className="text-3xl font-black text-emerald-400">{stats.money.toLocaleString()}đ</span>
-          </div>
-        </div>
-
-        {/* Năng lượng */}
-        <div className="glass-morphism bg-white/5 p-6 rounded-[24px] border border-white/10 text-white shadow-xl">
-          <div className="flex justify-between items-center mb-4 px-1">
-            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-50">Năng lượng</span>
-            <span className={`text-2xl font-black ${stats.energy <= 20 ? 'text-red-500 animate-pulse' : 'text-emerald-400'}`}>
-              {stats.energy}%
-            </span>
-          </div>
-          <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden border border-white/5">
-            <div
-              className={`h-full transition-all duration-500 rounded-full ${stats.energy <= 20
-                ? 'bg-gradient-to-r from-red-600 to-orange-500'
-                : stats.energy <= 50
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-300'
-                  : 'bg-gradient-to-r from-emerald-600 to-emerald-400'
-                }`}
-              style={{ width: `${stats.energy}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Thời gian in Game */}
-        <div className="glass-morphism bg-white/5 px-6 py-6 rounded-[28px] border border-white/10 text-center text-white shadow-xl">
-          <span className="text-xs font-black uppercase opacity-50 block tracking-widest mb-2">Thời gian</span>
-          <span className="font-black text-2xl">
-            Năm {Math.ceil(stats.time.day / 2)} - Học kì {stats.time.day % 2 === 0 ? 2 : 1}
-          </span>
-        </div>
-
-        {/* Năng lượng tốt (Buff) */}
-        <div className="glass-morphism bg-white/5 py-5 px-6 rounded-[24px] border border-white/10 text-white shadow-xl text-center">
-          <span className="text-[10px] font-black uppercase opacity-50 block tracking-widest mb-1">Năng lượng tốt</span>
-          <span className={`text-2xl font-black ${playerStats.energyBuffTimer > 0 ? 'text-indigo-400' : 'text-slate-500'}`}>
-            {playerStats.energyBuffTimer > 0 ? `${Math.floor(playerStats.energyBuffTimer / 60)}:${String(playerStats.energyBuffTimer % 60).padStart(2, '0')}` : '0:00'}
-          </span>
-        </div>
-
-        {/* Timers */}
-        {playerStats.isEnrolled && playerStats.isPaid && (
-          <AttendanceTimer
-            nextClassTimer={nextClassTimer}
-            checkInWindow={checkInWindow}
-            isClassStarting={isClassStarting}
-            playerStats={playerStats}
-          />
-        )}
-
-        {!playerStats.isPaid && (
-          <TermTimer timeLeft={timeLeftToEnroll} isEnrolled={playerStats.isPaid} />
-        )}
-
-        {/* Debug Toggle */}
-        <div className="mt-auto pt-6 border-t border-white/5">
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all border ${showDebug
-              ? 'bg-red-500/20 border-red-500/50 text-red-500 shadow-lg shadow-red-500/10'
-              : 'bg-white/5 border-white/10 text-slate-500 hover:bg-white/10'
-              }`}
-          >
-            {showDebug ? 'Tắt Debug Hitboxes' : 'Bật Debug Hitboxes'}
-          </button>
-        </div>
-      </div>
-
-      {/* MIDDLE CONTAINER (GAME VIEWPORT) */}
-      <div
-        className="relative bg-slate-950 overflow-hidden shadow-2xl"
-        style={{ width: DESIGN_WIDTH * scaleFactor, height: DESIGN_HEIGHT * scaleFactor, flexShrink: 0 }}
-      >
-        {/* GAME CONTAINER (SCALED) */}
-        <div
-          className="absolute top-0 left-0 bg-green-100 overflow-hidden transform-gpu"
-          style={{
-            width: DESIGN_WIDTH,
-            height: DESIGN_HEIGHT,
-            transform: `scale(${scaleFactor})`,
-            transformOrigin: 'top left'
-          }}
-        >
-          {playerStats.isExpelled && (
-            <GameOver
-              onReset={resetGame}
-              type="expelled"
-              title="Bạn đã bị đuổi học"
-              message={playerStats.expulsionReason === 'attendance'
-                ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
-                : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
-              }
-            />
-          )}
-
-          {playerStats.isStroke && (
-            <GameOver
-              onReset={resetGame}
-              type="stroke"
-              title="Đột quỵ không qua khỏi"
-              message="Vì kiệt sức và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!"
-            />
-          )}
-
-          {isCooking && <CookingOverlay progress={cookingProgress} />}
-          {isSleeping && <SleepOverlay progress={sleepProgress} />}
-          {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
-          {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
-          {isWaiting && <WaitingOverlay progress={waitingProgress} />}
-
-          <ElectricityBillOverlay
-            bill={playerStats.electricityBill}
-            onPay={payElectricityBill}
-            money={stats.money}
-          />
-
-          {/* World Map */}
-          <div
-            className="absolute inset-0 z-10 isolate"
-            style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
-            onClick={(e) => {
-              // Cập nhật tọa độ Click theo yêu cầu của tỷ lệ scaleFactor
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = (e.clientX - rect.left) / scaleFactor;
-              const clickY = (e.clientY - rect.top) / scaleFactor;
-
-              // Xử lý tọa độ map ở đây (Ví dụ: di chuyển tức thì, point-n-click)
-              console.log("Scaled Click:", clickX, clickY);
-            }}
-          >
-            <img
-              src={pathImage}
-              alt="Map Base"
-              className="absolute top-0 left-0"
-              style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT, objectFit: 'cover', zIndex: 0 }}
-            />
-
-            {LOCATIONS.map(loc => {
-              const d = loc.display;
-              const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
-
-              // Y-Sorting và Xử lý che khuất: Trừ bớt 25% viền ảnh thừa do hình ảnh có khoảng trống
-              const buildingBaseY = d.y + d.h * 0.75; // Căn Y-Sorting tại 75% chiều cao hình ảnh thay vì 100%
-              const playerFeetX = position.x + 10;
-              const playerFeetY = position.y + 50;
-
-              const isOccluded =
-                playerFeetX > d.x + d.w * 0.25 && // Trừ 25% viền trái
-                playerFeetX < d.x + d.w * 0.75 && // Trừ 25% viền phải
-                playerFeetY > d.y + d.h * 0.25 && // Trừ 25% viền trên
-                playerFeetY <= buildingBaseY;
-
-              return (
-                <React.Fragment key={loc.id}>
-                  {showDebug && (loc.interaction ? [loc.interaction] : loc.interactions || []).map((inter, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        position: 'absolute',
-                        left: inter.x + 10,
-                        top: inter.y + 25,
-                        width: inter.w,
-                        height: inter.h,
-                        transform: `rotate(${inter.rotation}deg)`,
-                        transformOrigin: 'center',
-                        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                        border: '2px solid rgba(255, 0, 0, 0.5)',
-                        zIndex: 2000,
-                        pointerEvents: 'none',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '8px',
-                        fontWeight: 'black',
-                        textAlign: 'center'
-                      }}
-                    >
-                      {loc.name}
-                    </div>
-                  ))}
-                  <img
-                    src={IMAGE_MAP[loc.image]}
-                    alt={loc.name}
-                    className="absolute transition-opacity duration-300 ease-in-out"
-                    style={{
-                      left: d.x,
-                      top: d.y,
-                      width: d.w,
-                      height: d.h,
-                      transform: tFlip,
-                      transformOrigin: 'center',
-                      zIndex: isOccluded ? 10000 + Math.floor(buildingBaseY) : Math.floor(buildingBaseY),
-                      opacity: isOccluded ? 0.5 : 1
-                    }}
-                  />
-                </React.Fragment>
-              );
-            })}
-
-            {/* Debug Interaction Point */}
-            {showDebug && (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: position.x + 10,
-                  top: position.y + 50,
-                  width: 8,
-                  height: 8,
-                  backgroundColor: 'red',
-                  borderRadius: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 3000,
-                  pointerEvents: 'none',
-                  boxShadow: '0 0 10px red'
-                }}
-              />
-            )}
-
-            {/* Player */}
-            <div
-              className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
-              style={{
-                width: 20, height: 50, left: position.x, top: position.y,
-                zIndex: 5000
-              }}
-            >
-              {/* Bóng đổ (Shadow) dưới chân nhân vật */}
-              <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
-
-              {/* Sprite Khung hiển thị (Được nới rộng bề ngang để ảnh không bị bẹp) */}
-              <div
-                className="absolute bottom-0 h-full overflow-hidden"
-                style={{
-                  width: playerStats.isRidingBicycle ? '60px' : '40px', 
-                  left: '50%',
-                  marginLeft: playerStats.isRidingBicycle ? '-30px' : '-20px', 
-                  transform: `scaleX(${
-                    playerStats.isRidingBicycle 
-                      ? (direction === 'left' || direction === 'right' ? -1 : 1)
-                      : (direction === 'left' || direction === 'down' ? -1 : 1)
-                  })`
-                }}
-              >
-                <img
-                  src={playerStats.isRidingBicycle 
-                    ? (direction === 'right' || direction === 'down' ? bikeDownImage : bikeUpImage)
-                    : (direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage)
-                  }
-                  alt="Character"
-                  className="absolute top-0 left-0 max-w-none pointer-events-none"
-                  style={{
-                    height: '100%',
-                    width: playerStats.isRidingBicycle ? '200%' : '400%', 
-                    transform: `translateX(-${frame * (playerStats.isRidingBicycle ? 50 : 25)}%)`
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Notifications */}
-          <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
-            {notifications.map(n => (
-              <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
-                <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
-                <button
-                  onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
-                >
-                  <X className="w-6 h-6 text-white/40" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Exhausted Popup (Mới) */}
-          {showExhaustedPopup && (
-            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-              <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
-                <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
-                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                  Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
-                </p>
-                <button
-                  onClick={handleExhaustedOk}
-                  className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Tutor Alert */}
-          {showTutorAlert && (
-            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-              <div className="bg-slate-900 border-2 border-indigo-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(99,102,241,0.3)] animate-in zoom-in-95 duration-500">
-                <h3 className="text-3xl font-black text-indigo-500 uppercase mb-6 tracking-widest">THÔNG BÁO</h3>
-                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                  Nhà học sinh ở cạnh nhà bạn!
-                </p>
-                <button
-                  onClick={() => {
-                    setShowTutorAlert(false);
-                  }}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Shipper Alert */}
-          {showShipperAlert && (
-            <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-              <div className="bg-slate-900 border-2 border-rose-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(244,63,94,0.3)] animate-in zoom-in-95 duration-500">
-                <h3 className="text-3xl font-black text-rose-500 uppercase mb-6 tracking-widest">THẤT BẠI</h3>
-                <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                  Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
-                </p>
-                <button
-                  onClick={() => setShowShipperAlert(false)}
-                  className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Interaction Modal */}
-          {isModalOpen && (
-            <InteractionModal
-              location={activeLocation}
-              interactionStep={interactionStep}
-              setInteractionStep={setInteractionStep}
-              onClose={closeModal}
-              onAction={handleAction}
-              playerStats={playerStats}
-              stats={stats}
-              isClassStarting={isClassStarting}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* RIGHT SIDEBAR (Bảng Xếp Hạng) */}
-      <div className="flex-1 min-w-[250px] bg-slate-900 border-l border-slate-800 p-6 flex flex-col z-50 overflow-y-auto">
-        <h2 className="text-xl font-black text-white/50 uppercase tracking-widest mb-4 font-mono">Bảng Xếp Hạng</h2>
-        <div className="text-slate-500 text-sm italic">Tính năng đang cập nhật...</div>
-      </div>
-
-    </div>
+    <GameLayout
+      appState={{
+        notifications, setNotifications,
+        timeLeftToEnroll,
+        showExhaustedPopup, handleExhaustedOk,
+        showTutorAlert, setShowTutorAlert,
+        showShipperAlert, setShowShipperAlert,
+        showDebug, setShowDebug,
+        frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,
+        handleAction
+      }}
+    />
   );
 }
 

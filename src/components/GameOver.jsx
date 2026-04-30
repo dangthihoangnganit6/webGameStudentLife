@@ -5,7 +5,7 @@ const GameOver = ({ onReset, type = "expelled", title, message }) => {
   const isStroke = type === 'stroke';
   
   return (
-    <div className={`fixed inset-0 z-[20000] flex items-center justify-center p-6 transition-colors duration-1000 ${isStroke ? 'bg-black' : 'bg-slate-950'}`}>
+    <div className={`absolute inset-0 z-[20000] flex items-center justify-center p-6 transition-colors duration-1000 w-full h-full ${isStroke ? 'bg-black' : 'bg-slate-950'}`}>
       <div 
         className={`absolute inset-0 animate-pulse transition-opacity duration-1000 ${
           isStroke 

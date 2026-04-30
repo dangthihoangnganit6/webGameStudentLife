@@ -3,7 +3,7 @@ import { Activity, HeartPulse } from 'lucide-react';
 
 const HospitalOverlay = ({ progress }) => {
   return (
-    <div className="fixed inset-0 z-[10000] bg-white/90 backdrop-blur-2xl flex items-center justify-center p-6 text-slate-900">
+    <div className="absolute inset-0 w-full h-full z-[10000] bg-white/90 backdrop-blur-2xl flex items-center justify-center p-6 text-slate-900">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.1)_0%,transparent_70%)] animate-pulse"></div>
       
       <div className="max-w-2xl w-full text-center relative z-10">

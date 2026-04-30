@@ -14,14 +14,15 @@ export const HOUSING_TYPES = [
 export const INGREDIENTS = [
   { id: 'egg', name: 'Trứng', price: 5000, energy: 10, cookTime: 3 },
   { id: 'meat', name: 'Thịt', price: 50000, energy: 40, cookTime: 8 },
-  { id: 'veggie', name: 'Rau', price: 5000, energy: 12, cookTime: 5 }
+  { id: 'veggie', name: 'Rau', price: 5000, energy: 12, cookTime: 5 },
+  { id: 'rice', name: 'Cơm', price: 10000, energy: 15, cookTime: 5 }
 ];
 
 export const CANTEEN_MENU = [
-  { id: 'com_ga', name: 'Cơm gà', price: 35000, energy: 30 },
-  { id: 'bun_bo', name: 'Bún bò', price: 40000, energy: 35 },
-  { id: 'nuoc_ngot', name: 'Nước ngọt', price: 10000, energy: 5 },
-  { id: 'tra_sua', name: 'Trà sữa', price: 25000, energy: 15 }
+  { id: 'com_ga', name: 'Cơm gà', price: 40000, energy: 20 },
+  { id: 'bun_bo', name: 'Bún bò', price: 55000, energy: 35 },
+  { id: 'nuoc_ngot', name: 'Nước ngọt', price: 15000, energy: 5 },
+  { id: 'tra_sua', name: 'Trà sữa', price: 30000, energy: 15 }
 ];
 
 export const LOCATIONS = [
