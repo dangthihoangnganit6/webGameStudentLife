@@ -61,6 +61,7 @@ function App() {
 
   const keys = useKeyboard();
   const [showPrompt, setShowPrompt] = useState(null);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(5 * 60);
   const [showExhaustedPopup, setShowExhaustedPopup] = useState(false);
   const [showTutorAlert, setShowTutorAlert] = useState(false);
@@ -114,6 +115,7 @@ function App() {
 
   // Term Sync & Expulsion Logic
   useEffect(() => {
+    if (!isGameStarted) return;
     let startTime = localStorage.getItem('termStartTime');
     if (!startTime) {
       startTime = Date.now().toString();
@@ -146,6 +148,7 @@ function App() {
 
   // Periodic Energy Exhaustion Logic (1 unit per 10s)
   useEffect(() => {
+    if (!isGameStarted) return;
     const energyTimer = setInterval(() => {
       updateStats(prev => ({ energy: Math.max(0, prev.energy - 1) }));
     }, 10000);
@@ -155,6 +158,7 @@ function App() {
 
   // Homeless Energy Depletion (1 unit per 1s)
   useEffect(() => {
+    if (!isGameStarted) return;
     if (playerStats.rentedRoom) return;
 
     const homelessTimer = setInterval(() => {
@@ -166,6 +170,7 @@ function App() {
 
   // Electricity Penalty & Timer
   useEffect(() => {
+    if (!isGameStarted) return;
     const timer = setInterval(() => {
       updateElectricityTimer();
       if (playerStats.electricityBill.status === 'overdue') {
@@ -177,6 +182,7 @@ function App() {
 
   // Energy Buff Timer (Miễn nhiễm giảm năng lượng)
   useEffect(() => {
+    if (!isGameStarted) return;
     if (playerStats.energyBuffTimer <= 0) return;
     const buffTimer = setInterval(() => {
       useGameStore.setState(state => ({
@@ -191,6 +197,7 @@ function App() {
 
   // Homeless Notification Logic
   useEffect(() => {
+    if (!isGameStarted) return;
     if (playerStats.rentedRoom) return;
 
     // Show notification every 15 seconds if still homeless (reduced frequency)
@@ -205,6 +212,7 @@ function App() {
   const [lastWarningTime, setLastWarningTime] = useState(0);
 
   useEffect(() => {
+    if (!isGameStarted) return;
     if (stats.energy <= 0 && !isHospitalized && !showExhaustedPopup && !playerStats.isStroke) {
       const newCount = playerStats.hospitalCount + 1;
 
@@ -257,6 +265,7 @@ function App() {
   };
   // Allowance Loop Logic
   useEffect(() => {
+    if (!isGameStarted) return;
     const baseT = playerStats.totalCredits > 0 ? playerStats.totalCredits / 5 : 5;
     const intervalMinutes = playerStats.difficulty === 'hard' ? baseT / 2 : baseT;
     const allowanceIntervalSeconds = Math.max(10, Math.round(intervalMinutes * 60)) * 3;
@@ -286,6 +295,7 @@ function App() {
 
   // Stable Movement Loop
   useEffect(() => {
+    if (!isGameStarted) return;
     const moveLoop = setInterval(() => {
       const state = useGameStore.getState();
       const currentKeys = keys; // keys state is fine since it's updated via listeners
@@ -355,6 +365,7 @@ function App() {
 
   // Attendance Loop logic
   useEffect(() => {
+    if (!isGameStarted) return;
     if (playerStats.isDroppedOut || !playerStats.isEnrolled || !playerStats.isPaid) return;
 
     const baseT = playerStats.totalCredits / 5;
@@ -388,6 +399,7 @@ function App() {
 
   // Rent Billing Loop
   useEffect(() => {
+    if (!isGameStarted) return;
     if (!playerStats.rentedRoom) return;
 
     const baseT = playerStats.totalCredits > 0 ? playerStats.totalCredits / 5 : 5;
@@ -409,6 +421,7 @@ function App() {
 
   // Vòng lặp kết thúc
   useEffect(() => {
+    if (!isGameStarted) return;
     if (!playerStats.isEnrolled) return;
 
     if (playerStats.attendanceCount >= playerStats.totalCredits && playerStats.totalCredits > 0) {
@@ -688,6 +701,7 @@ function App() {
         showTutorAlert, setShowTutorAlert,
         showShipperAlert, setShowShipperAlert,
         showDebug, setShowDebug,
+        isGameStarted, setIsGameStarted,
         frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,
         handleAction
       }}

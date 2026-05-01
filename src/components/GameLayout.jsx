@@ -10,6 +10,7 @@ import TermTimer from './TermTimer';
 import ElectricityBillOverlay from './ElectricityBillOverlay';
 import GameOver from './GameOver';
 import WaitingOverlay from './WaitingOverlay';
+import StartScreen from './StartScreen';
 import { X, GraduationCap, Zap, Coins, Clock, User, BookOpen, Briefcase, Heart, Bike } from 'lucide-react';
 import { MAP_CONFIG } from '../game/constants';
 import { LOCATIONS } from '../data/locations';
@@ -66,6 +67,7 @@ export default function GameLayout({ appState }) {
     showTutorAlert, setShowTutorAlert,
     showShipperAlert, setShowShipperAlert,
     showDebug, setShowDebug,
+    isGameStarted, setIsGameStarted,
     frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,
     handleAction
   } = appState;
@@ -216,7 +218,11 @@ export default function GameLayout({ appState }) {
                 transformOrigin: 'center'
               }}
             >
-              {playerStats.isExpelled && (
+              {!isGameStarted ? (
+                <StartScreen onStart={() => setIsGameStarted(true)} />
+              ) : (
+                <>
+                  {playerStats.isExpelled && (
                 <GameOver
                   onReset={resetGame}
                   type="expelled"
@@ -491,6 +497,8 @@ export default function GameLayout({ appState }) {
                   stats={stats}
                   isClassStarting={isClassStarting}
                 />
+              )}
+              </>
               )}
             </div>
           </div>
