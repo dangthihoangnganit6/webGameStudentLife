@@ -144,7 +144,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(termTimer);
-  }, [playerStats.isEnrolled, playerStats.isPaid, playerStats.termStartTime, updatePlayerStats]);
+  }, [playerStats.isEnrolled, playerStats.isPaid, playerStats.termStartTime, updatePlayerStats, isGameStarted]);
 
   // Periodic Energy Exhaustion Logic (1 unit per 10s)
   useEffect(() => {
@@ -154,7 +154,7 @@ function App() {
     }, 10000);
 
     return () => clearInterval(energyTimer);
-  }, [updateStats]);
+  }, [updateStats, isGameStarted]);
 
   // Homeless Energy Depletion (1 unit per 1s)
   useEffect(() => {
@@ -166,7 +166,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(homelessTimer);
-  }, [playerStats.rentedRoom, updateStats]);
+  }, [playerStats.rentedRoom, updateStats, isGameStarted]);
 
   // Electricity Penalty & Timer
   useEffect(() => {
@@ -178,7 +178,7 @@ function App() {
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [playerStats.electricityBill.status, updateElectricityTimer, updateStats]);
+  }, [playerStats.electricityBill.status, updateElectricityTimer, updateStats, isGameStarted]);
 
   // Energy Buff Timer (Miễn nhiễm giảm năng lượng)
   useEffect(() => {
@@ -193,7 +193,7 @@ function App() {
       }));
     }, 1000);
     return () => clearInterval(buffTimer);
-  }, [playerStats.energyBuffTimer]);
+  }, [playerStats.energyBuffTimer, isGameStarted]);
 
   // Homeless Notification Logic
   useEffect(() => {
@@ -206,7 +206,7 @@ function App() {
       notify("Bạn đang không có nhà ở, năng lượng bị giảm mỗi giây");
     }, 15000);
     return () => clearInterval(interval);
-  }, [playerStats.rentedRoom, notify]);
+  }, [playerStats.rentedRoom, notify, isGameStarted]);
 
   // Energy Status Monitoring & Fainting
   const [lastWarningTime, setLastWarningTime] = useState(0);
@@ -228,7 +228,7 @@ function App() {
         setLastWarningTime(now);
       }
     }
-  }, [stats.energy, isHospitalized, showExhaustedPopup, playerStats.hospitalCount, playerStats.isStroke, updatePlayerStats, lastWarningTime, notify]);
+  }, [stats.energy, isHospitalized, showExhaustedPopup, playerStats.hospitalCount, playerStats.isStroke, updatePlayerStats, lastWarningTime, notify, isGameStarted]);
 
   const handleExhaustedOk = () => {
     setShowExhaustedPopup(false);
@@ -291,7 +291,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(allowanceTimer);
-  }, [playerStats.allowanceAccumulator, playerStats.totalCredits, playerStats.difficulty, stats.money, updateStats, updatePlayerStats, notify]);
+  }, [playerStats.allowanceAccumulator, playerStats.totalCredits, playerStats.difficulty, stats.money, updateStats, updatePlayerStats, notify, isGameStarted]);
 
   // Stable Movement Loop
   useEffect(() => {
@@ -361,7 +361,7 @@ function App() {
     }, 16);
 
     return () => clearInterval(moveLoop);
-  }, [keys, openModal, showPrompt, updatePosition, setDirection, scaleFactor]); // Reduced dependencies, using state directly inside
+  }, [keys, openModal, showPrompt, updatePosition, setDirection, scaleFactor, isGameStarted]); // Reduced dependencies, using state directly inside
 
   // Attendance Loop logic
   useEffect(() => {
@@ -394,7 +394,7 @@ function App() {
     return () => clearInterval(timer);
   }, [
     playerStats.isDroppedOut, playerStats.isEnrolled, playerStats.isPaid, playerStats.totalCredits, playerStats.difficulty,
-    isClassStarting, nextClassTimer, checkInWindow, setClassStatus, updateTimers, incrementMissed
+    isClassStarting, nextClassTimer, checkInWindow, setClassStatus, updateTimers, incrementMissed, isGameStarted
   ]);
 
   // Rent Billing Loop
@@ -417,7 +417,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(billingTimer);
-  }, [playerStats.rentedRoom, playerStats.rentTimer, playerStats.totalCredits, playerStats.difficulty, payRent, updatePlayerStats]);
+  }, [playerStats.rentedRoom, playerStats.rentTimer, playerStats.totalCredits, playerStats.difficulty, payRent, updatePlayerStats, isGameStarted]);
 
   // Vòng lặp kết thúc
   useEffect(() => {
@@ -430,7 +430,7 @@ function App() {
     } else if (playerStats.missedClasses >= 3) {
       updatePlayerStats({ isExpelled: true, expulsionReason: 'attendance' });
     }
-  }, [playerStats.attendanceCount, playerStats.missedClasses, playerStats.totalCredits, playerStats.isEnrolled, resetSchoolData]);
+  }, [playerStats.attendanceCount, playerStats.missedClasses, playerStats.totalCredits, playerStats.isEnrolled, resetSchoolData, isGameStarted]);
 
   const handleAction = (type, data) => {
     switch (type) {
