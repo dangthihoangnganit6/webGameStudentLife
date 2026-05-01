@@ -68,8 +68,10 @@ function App() {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [timeLeftToEnroll, setTimeLeftToEnroll] = useState(5 * 60);
   const [showExhaustedPopup, setShowExhaustedPopup] = useState(false);
+  const [systemAlert, setSystemAlert] = useState(null);
   const [showTutorAlert, setShowTutorAlert] = useState(false);
   const [showShipperAlert, setShowShipperAlert] = useState(false);
+  const [hasReceivedInitialMoney, setHasReceivedInitialMoney] = useState(false);
 
   // Sprite Animation State
   const isMoving = !!(keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
@@ -83,10 +85,28 @@ function App() {
       setShowTutorAlert(false);
       setShowShipperAlert(false);
       setShowPrompt(null);
+      setSystemAlert(null);
       setTimeLeftToEnroll(5 * 60);
       setNotifications([]);
+      setHasReceivedInitialMoney(false);
     }
   }, [isGameStarted, playerStats.isExpelled, playerStats.isStroke]);
+
+  // Give initial money when game starts
+  useEffect(() => {
+    if (isGameStarted && !hasReceivedInitialMoney) {
+      setSystemAlert({
+        type: 'income',
+        title: 'TRỢ CẤP ĐẦU KỲ',
+        message: 'Bố mẹ vừa gửi cho bạn 3.000.000đ tiền sinh hoạt phí tháng đầu tiên!',
+        onOk: () => {
+          const currentState = useGameStore.getState();
+          currentState.updateStats({ money: currentState.stats.money + 3000000 });
+        }
+      });
+      setHasReceivedInitialMoney(true);
+    }
+  }, [isGameStarted, hasReceivedInitialMoney]);
 
   useEffect(() => {
     if (!isMoving) {
@@ -259,7 +279,9 @@ function App() {
     updatePlayerStats({ hospitalCount: newCount });
     setHospitalized(true);
     setHospitalizationProgress(0);
-    updatePosition({ x: 158.72, y: 59.44 }); // True hospital coordinates from LOCATIONS
+    // Move character near the hospital entrance
+    updatePosition({ x: 380, y: 400 });
+    setDirection('down');
 
     const therapyTime = 60; // 1 minute
     let therapyCurrent = 0;
@@ -288,7 +310,11 @@ function App() {
       if (nextAcc >= allowanceIntervalSeconds) {
         updateStats({ money: stats.money + 3000000 });
         updatePlayerStats({ allowanceAccumulator: 0 });
-        notify("Bố mẹ vừa gửi cho bạn 3.000.000đ tiền sinh hoạt phí!");
+        setSystemAlert({
+          type: 'income',
+          title: 'NHẬN TIỀN SINH HOẠT',
+          message: 'Bố mẹ vừa gửi cho bạn 3.000.000đ tiền sinh hoạt phí!'
+        });
 
         // New Rule: Trigger electricity bill after allowance notification ends (2s)
         setTimeout(() => {
@@ -313,7 +339,7 @@ function App() {
       const state = useGameStore.getState();
       const currentKeys = keys; // keys state is fine since it's updated via listeners
 
-      if (state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (systemAlert || state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
 
       let moveKey = null;
       if (currentKeys.ArrowUp) moveKey = 'ArrowUp';
@@ -426,7 +452,11 @@ function App() {
       const nextTimer = playerStats.rentTimer + 1;
       if (nextTimer >= rentIntervalSeconds) {
         payRent();
-        notify(`Bạn đã bị trừ ${playerStats.rentedRoom.price.toLocaleString()}đ tiền thuê phòng!`);
+        setSystemAlert({
+          type: 'expense',
+          title: 'THÔNG BÁO TRỪ TIỀN TRỌ',
+          message: `Bạn đã bị trừ ${playerStats.rentedRoom.price.toLocaleString()}đ tiền thuê phòng!`
+        });
       } else {
         updatePlayerStats({ rentTimer: nextTimer });
       }
@@ -482,7 +512,11 @@ function App() {
         if (playerStats.pendingParentSupport) {
           updateStats({ money: stats.money + playerStats.tuitionDue });
           updatePlayerStats({ pendingParentSupport: false, hasClaimedParentSupport: true });
-          notify(`Bố mẹ đã cho bạn ${playerStats.tuitionDue.toLocaleString()}đ tiền học phí!`);
+          setSystemAlert({
+            type: 'income',
+            title: 'NHẬN TIỀN HỌC PHÍ',
+            message: `Bố mẹ đã cho bạn ${playerStats.tuitionDue.toLocaleString()}đ tiền học phí!`
+          });
           closeModal();
         }
         break;
@@ -716,6 +750,7 @@ function App() {
         showExhaustedPopup, handleExhaustedOk,
         showTutorAlert, setShowTutorAlert,
         showShipperAlert, setShowShipperAlert,
+        systemAlert, setSystemAlert,
         showDebug, setShowDebug,
         isGameStarted, setIsGameStarted,
         frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,

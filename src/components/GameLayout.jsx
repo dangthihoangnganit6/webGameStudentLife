@@ -72,6 +72,7 @@ export default function GameLayout({ appState }) {
     showExhaustedPopup, handleExhaustedOk,
     showTutorAlert, setShowTutorAlert,
     showShipperAlert, setShowShipperAlert,
+    systemAlert, setSystemAlert,
     showDebug, setShowDebug,
     isGameStarted, setIsGameStarted,
     frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,
@@ -428,6 +429,35 @@ export default function GameLayout({ appState }) {
                         <button
                           onClick={handleExhaustedOk}
                           className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* System Alert Popup */}
+                  {systemAlert && (
+                    <div className="absolute inset-0 z-[16000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+                      <div className="bg-slate-900 border-2 p-10 rounded-[32px] max-w-lg text-center shadow-2xl animate-in zoom-in-95 duration-500"
+                           style={{ 
+                             borderColor: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B'),
+                             boxShadow: systemAlert.type === 'income' ? '0 0 100px rgba(16,185,129,0.3)' : (systemAlert.type === 'expense' ? '0 0 100px rgba(244,63,94,0.3)' : '0 0 100px rgba(245,158,11,0.3)')
+                           }}>
+                        <h3 className="text-3xl font-black uppercase mb-6 tracking-widest"
+                            style={{ color: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B') }}>
+                          {systemAlert.title}
+                        </h3>
+                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                          {systemAlert.message}
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (systemAlert.onOk) systemAlert.onOk();
+                            setSystemAlert(null);
+                          }}
+                          className="text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                          style={{ backgroundColor: systemAlert.type === 'income' ? '#059669' : (systemAlert.type === 'expense' ? '#E11D48' : '#D97706') }}
                         >
                           OK
                         </button>

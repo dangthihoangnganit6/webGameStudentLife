@@ -4,7 +4,7 @@ const useGameStore = create((set) => ({
   // Student Stats
   stats: {
     energy: 100,
-    money: 3000000,
+    money: 0,
     time: { day: 1, hour: 8, minute: 0 },
   },
   
@@ -188,7 +188,7 @@ const useGameStore = create((set) => ({
     set((state) => ({
       stats: {
         energy: 100,
-        money: 3000000,
+        money: 0,
         time: { day: 1, hour: 8, minute: 0 },
       },
       playerStats: {
