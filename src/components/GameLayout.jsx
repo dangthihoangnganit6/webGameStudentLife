@@ -229,258 +229,264 @@ export default function GameLayout({ appState }) {
               ) : (
                 <>
                   {playerStats.isExpelled && (
-                <GameOver
-                  onReset={resetGame}
-                  type="expelled"
-                  title="Bạn đã bị đuổi học"
-                  message={playerStats.expulsionReason === 'attendance'
-                    ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
-                    : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
-                  }
-                />
-              )}
-
-              {playerStats.isStroke && (
-                <GameOver
-                  onReset={resetGame}
-                  type="stroke"
-                  title="Đột quỵ không qua khỏi"
-                  message="Vì kiệt sức và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!"
-                />
-              )}
-
-              {isCooking && <CookingOverlay progress={cookingProgress} />}
-              {isSleeping && <SleepOverlay progress={sleepProgress} />}
-              {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
-              {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
-              {isWaiting && <WaitingOverlay progress={waitingProgress} />}
-
-              <ElectricityBillOverlay
-                bill={playerStats.electricityBill}
-                onPay={payElectricityBill}
-                money={stats.money}
-              />
-
-              {/* World Map */}
-              <div
-                className="absolute inset-0 z-10 isolate m-0 p-0"
-                style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clickX = (e.clientX - rect.left) / scaleFactor;
-                  const clickY = (e.clientY - rect.top) / scaleFactor;
-                  console.log("Scaled Click:", clickX, clickY);
-                }}
-              >
-                <img
-                  src={pathImage}
-                  alt="Map Base"
-                  className="absolute top-0 left-0 block w-full h-full object-cover"
-                  style={{ zIndex: 0 }}
-                />
-
-                {LOCATIONS.map(loc => {
-                  const d = loc.display;
-                  const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
-
-                  const buildingBaseY = d.y + d.h * 0.75;
-                  const playerFeetX = position.x + 10;
-                  const playerFeetY = position.y + 50;
-
-                  const isOccluded =
-                    playerFeetX > d.x + d.w * 0.25 &&
-                    playerFeetX < d.x + d.w * 0.75 &&
-                    playerFeetY > d.y + d.h * 0.25 &&
-                    playerFeetY <= buildingBaseY;
-
-                  return (
-                    <React.Fragment key={loc.id}>
-
-                      <img
-                        src={IMAGE_MAP[loc.image]}
-                        alt={loc.name}
-                        className="absolute transition-opacity duration-300 ease-in-out"
-                        style={{
-                          left: d.x,
-                          top: d.y,
-                          width: d.w,
-                          height: d.h,
-                          transform: tFlip,
-                          transformOrigin: 'center',
-                          zIndex: isOccluded ? 10000 + Math.floor(buildingBaseY) : Math.floor(buildingBaseY),
-                          opacity: isOccluded ? 0.5 : 1
-                        }}
-                      />
-                    </React.Fragment>
-                  );
-                })}
-
-                {/* Hiển thị vùng va chạm (Obstacles) & Interactions (SVG Overlay) */}
-                <HitboxOverlay visible={showDebug} />
-
-                {/* Debug Interaction Point */}
-                {showDebug && (
-                  playerStats.isRidingBicycle ? (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: position.x + 10,
-                        top: position.y + 50,
-                        width: 40,
-                        height: 4,
-                        backgroundColor: 'red',
-                        borderRadius: '2px',
-                        transform: 'translate(-50%, -50%) rotate(30deg)',
-                        zIndex: 3000,
-                        pointerEvents: 'none',
-                        boxShadow: '0 0 10px red'
+                    <GameOver
+                      onReset={() => {
+                        resetGame();
+                        setIsGameStarted(false);
                       }}
+                      type="expelled"
+                      title="Bạn đã bị đuổi học"
+                      message={playerStats.expulsionReason === 'attendance'
+                        ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
+                        : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
+                      }
                     />
-                  ) : (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: position.x + 10,
-                        top: position.y + 50,
-                        width: 8,
-                        height: 8,
-                        backgroundColor: 'red',
-                        borderRadius: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        zIndex: 3000,
-                        pointerEvents: 'none',
-                        boxShadow: '0 0 10px red'
+                  )}
+
+                  {playerStats.isStroke && (
+                    <GameOver
+                      onReset={() => {
+                        resetGame();
+                        setIsGameStarted(false);
                       }}
+                      type="stroke"
+                      title="Đột quỵ không qua khỏi"
+                      message="Vì kiệt sức và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!"
                     />
-                  )
-                )}
+                  )}
 
-                {/* Player */}
-                <div
-                  className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
-                  style={{
-                    width: 20, height: 50, left: position.x, top: position.y,
-                    zIndex: 5000
-                  }}
-                >
-                  {/* Bóng đổ (Shadow) */}
-                  <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
+                  {isCooking && <CookingOverlay progress={cookingProgress} />}
+                  {isSleeping && <SleepOverlay progress={sleepProgress} />}
+                  {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
+                  {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
+                  {isWaiting && <WaitingOverlay progress={waitingProgress} />}
 
-                  {/* Sprite Khung hiển thị */}
+                  <ElectricityBillOverlay
+                    bill={playerStats.electricityBill}
+                    onPay={payElectricityBill}
+                    money={stats.money}
+                  />
+
+                  {/* World Map */}
                   <div
-                    className="absolute bottom-0 h-full overflow-hidden"
-                    style={{
-                      width: playerStats.isRidingBicycle ? '60px' : '40px',
-                      left: '50%',
-                      marginLeft: playerStats.isRidingBicycle ? '-30px' : '-20px',
-                      transform: `scaleX(${playerStats.isRidingBicycle
-                          ? (direction === 'left' || direction === 'right' ? -1 : 1)
-                          : (direction === 'left' || direction === 'down' ? -1 : 1)
-                        })`
+                    className="absolute inset-0 z-10 isolate m-0 p-0"
+                    style={{ width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }}
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const clickX = (e.clientX - rect.left) / scaleFactor;
+                      const clickY = (e.clientY - rect.top) / scaleFactor;
+                      console.log("Scaled Click:", clickX, clickY);
                     }}
                   >
                     <img
-                      src={playerStats.isRidingBicycle
-                        ? (direction === 'right' || direction === 'down' ? bikeDownImage : bikeUpImage)
-                        : (direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage)
-                      }
-                      alt="Character"
-                      className="absolute top-0 left-0 max-w-none pointer-events-none"
-                      style={{
-                        height: '100%',
-                        width: playerStats.isRidingBicycle ? '200%' : '400%',
-                        transform: `translateX(-${(playerStats.isRidingBicycle ? frame % 2 : frame) * (playerStats.isRidingBicycle ? 50 : 25)}%)`
-                      }}
+                      src={pathImage}
+                      alt="Map Base"
+                      className="absolute top-0 left-0 block w-full h-full object-cover"
+                      style={{ zIndex: 0 }}
                     />
-                  </div>
-                </div>
-              </div>
 
-              {/* Notifications */}
-              <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
-                {notifications.map(n => (
-                  <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
-                    <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
-                    <button
-                      onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
-                      className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
-                    >
-                      <X className="w-6 h-6 text-white/40" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    {LOCATIONS.map(loc => {
+                      const d = loc.display;
+                      const tFlip = d.rotation === 180 ? 'scaleX(-1)' : `rotate(${d.rotation || 0}deg)`;
 
-              {/* Exhausted Popup */}
-              {showExhaustedPopup && (
-                <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                  <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
-                    <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
-                    <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                      Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
-                    </p>
-                    <button
-                      onClick={handleExhaustedOk}
-                      className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                    >
-                      OK
-                    </button>
-                  </div>
-                </div>
-              )}
+                      const buildingBaseY = d.y + d.h * 0.75;
+                      const playerFeetX = position.x + 10;
+                      const playerFeetY = position.y + 50;
 
-              {/* Tutor Alert */}
-              {showTutorAlert && (
-                <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                  <div className="bg-slate-900 border-2 border-indigo-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(99,102,241,0.3)] animate-in zoom-in-95 duration-500">
-                    <h3 className="text-3xl font-black text-indigo-500 uppercase mb-6 tracking-widest">THÔNG BÁO</h3>
-                    <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                      Nhà học sinh ở cạnh nhà bạn!
-                    </p>
-                    <button
-                      onClick={() => {
-                        setShowTutorAlert(false);
+                      const isOccluded =
+                        playerFeetX > d.x + d.w * 0.25 &&
+                        playerFeetX < d.x + d.w * 0.75 &&
+                        playerFeetY > d.y + d.h * 0.25 &&
+                        playerFeetY <= buildingBaseY;
+
+                      return (
+                        <React.Fragment key={loc.id}>
+
+                          <img
+                            src={IMAGE_MAP[loc.image]}
+                            alt={loc.name}
+                            className="absolute transition-opacity duration-300 ease-in-out"
+                            style={{
+                              left: d.x,
+                              top: d.y,
+                              width: d.w,
+                              height: d.h,
+                              transform: tFlip,
+                              transformOrigin: 'center',
+                              zIndex: isOccluded ? 10000 + Math.floor(buildingBaseY) : Math.floor(buildingBaseY),
+                              opacity: isOccluded ? 0.5 : 1
+                            }}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+
+                    {/* Hiển thị vùng va chạm (Obstacles) & Interactions (SVG Overlay) */}
+                    <HitboxOverlay visible={showDebug} />
+
+                    {/* Debug Interaction Point */}
+                    {showDebug && (
+                      playerStats.isRidingBicycle ? (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: position.x + 10,
+                            top: position.y + 50,
+                            width: 40,
+                            height: 4,
+                            backgroundColor: 'red',
+                            borderRadius: '2px',
+                            transform: 'translate(-50%, -50%) rotate(30deg)',
+                            zIndex: 3000,
+                            pointerEvents: 'none',
+                            boxShadow: '0 0 10px red'
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: position.x + 10,
+                            top: position.y + 50,
+                            width: 8,
+                            height: 8,
+                            backgroundColor: 'red',
+                            borderRadius: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 3000,
+                            pointerEvents: 'none',
+                            boxShadow: '0 0 10px red'
+                          }}
+                        />
+                      )
+                    )}
+
+                    {/* Player */}
+                    <div
+                      className="absolute overflow-visible flex items-end justify-center drop-shadow-2xl"
+                      style={{
+                        width: 20, height: 50, left: position.x, top: position.y,
+                        zIndex: 5000
                       }}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
                     >
-                      OK
-                    </button>
-                  </div>
-                </div>
-              )}
+                      {/* Bóng đổ (Shadow) */}
+                      <div className="absolute bottom-[-2px] w-[110%] h-2 bg-black/40 rounded-[100%] blur-[1px]"></div>
 
-              {/* Shipper Alert */}
-              {showShipperAlert && (
-                <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                  <div className="bg-slate-900 border-2 border-rose-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(244,63,94,0.3)] animate-in zoom-in-95 duration-500">
-                    <h3 className="text-3xl font-black text-rose-500 uppercase mb-6 tracking-widest">THẤT BẠI</h3>
-                    <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                      Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
-                    </p>
-                    <button
-                      onClick={() => setShowShipperAlert(false)}
-                      className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                    >
-                      OK
-                    </button>
+                      {/* Sprite Khung hiển thị */}
+                      <div
+                        className="absolute bottom-0 h-full overflow-hidden"
+                        style={{
+                          width: playerStats.isRidingBicycle ? '60px' : '40px',
+                          left: '50%',
+                          marginLeft: playerStats.isRidingBicycle ? '-30px' : '-20px',
+                          transform: `scaleX(${playerStats.isRidingBicycle
+                            ? (direction === 'left' || direction === 'right' ? -1 : 1)
+                            : (direction === 'left' || direction === 'down' ? -1 : 1)
+                            })`
+                        }}
+                      >
+                        <img
+                          src={playerStats.isRidingBicycle
+                            ? (direction === 'right' || direction === 'down' ? bikeDownImage : bikeUpImage)
+                            : (direction === 'right' || direction === 'down' ? spriteRightImage : spriteUpImage)
+                          }
+                          alt="Character"
+                          className="absolute top-0 left-0 max-w-none pointer-events-none"
+                          style={{
+                            height: '100%',
+                            width: playerStats.isRidingBicycle ? '200%' : '400%',
+                            transform: `translateX(-${(playerStats.isRidingBicycle ? frame % 2 : frame) * (playerStats.isRidingBicycle ? 50 : 25)}%)`
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* Interaction Modal */}
-              {isModalOpen && (
-                <InteractionModal
-                  location={activeLocation}
-                  interactionStep={interactionStep}
-                  setInteractionStep={setInteractionStep}
-                  onClose={closeModal}
-                  onAction={handleAction}
-                  playerStats={playerStats}
-                  stats={stats}
-                  isClassStarting={isClassStarting}
-                />
-              )}
-              </>
+                  {/* Notifications */}
+                  <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
+                    {notifications.map(n => (
+                      <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
+                        <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
+                        <button
+                          onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
+                          className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+                        >
+                          <X className="w-6 h-6 text-white/40" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Exhausted Popup */}
+                  {showExhaustedPopup && (
+                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+                      <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
+                        <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
+                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                          Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
+                        </p>
+                        <button
+                          onClick={handleExhaustedOk}
+                          className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tutor Alert */}
+                  {showTutorAlert && (
+                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+                      <div className="bg-slate-900 border-2 border-indigo-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(99,102,241,0.3)] animate-in zoom-in-95 duration-500">
+                        <h3 className="text-3xl font-black text-indigo-500 uppercase mb-6 tracking-widest">THÔNG BÁO</h3>
+                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                          Nhà học sinh ở cạnh nhà bạn!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setShowTutorAlert(false);
+                          }}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shipper Alert */}
+                  {showShipperAlert && (
+                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+                      <div className="bg-slate-900 border-2 border-rose-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(244,63,94,0.3)] animate-in zoom-in-95 duration-500">
+                        <h3 className="text-3xl font-black text-rose-500 uppercase mb-6 tracking-widest">THẤT BẠI</h3>
+                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
+                          Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
+                        </p>
+                        <button
+                          onClick={() => setShowShipperAlert(false)}
+                          className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interaction Modal */}
+                  {isModalOpen && (
+                    <InteractionModal
+                      location={activeLocation}
+                      interactionStep={interactionStep}
+                      setInteractionStep={setInteractionStep}
+                      onClose={closeModal}
+                      onAction={handleAction}
+                      playerStats={playerStats}
+                      stats={stats}
+                      isClassStarting={isClassStarting}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>

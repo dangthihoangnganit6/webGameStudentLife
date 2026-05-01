@@ -53,6 +53,9 @@ function App() {
   const [notifications, setNotifications] = useState([]);
 
   const notify = useCallback((text) => {
+    const currentState = useGameStore.getState();
+    if (currentState.playerStats.isExpelled || currentState.playerStats.isStroke) return;
+
     const id = Date.now();
     setNotifications(prev => [...prev, { id, text }]);
     setTimeout(() => {
@@ -72,6 +75,18 @@ function App() {
   const isMoving = !!(keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
   const [frame, setFrame] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
+
+  // Reset local UI states when the game is restarted or when Game Over happens
+  useEffect(() => {
+    if (!isGameStarted || playerStats.isExpelled || playerStats.isStroke) {
+      setShowExhaustedPopup(false);
+      setShowTutorAlert(false);
+      setShowShipperAlert(false);
+      setShowPrompt(null);
+      setTimeLeftToEnroll(5 * 60);
+      setNotifications([]);
+    }
+  }, [isGameStarted, playerStats.isExpelled, playerStats.isStroke]);
 
   useEffect(() => {
     if (!isMoving) {

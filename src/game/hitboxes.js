@@ -48,7 +48,7 @@ export const INTERACTION_POLYGONS = [
   { id: 'sell_transport_station', pts: parseRect(1024.81, 708.7, 116, 91.6224, 30, 1024.81, 708.7) },
   { id: 'student_house', pts: parseRect(1393.08, 463.796, 104.046, 98.631, 30, 1393.08, 463.796) },
   { id: 'work', pts: parseRect(718, 102.933, 87.8652, 77.1384, -30, 718, 102.933) },
-  { id: 'parents_home', pts: parseRect(1272.94, 875.544, 131.552, 82.6615, 30, 1272.94, 875.544) },
+  { id: 'parents_home', pts: parseRect(1272.94, 875.544, 131.552, 90.0503, 30, 1272.94, 875.544) },
   { id: 'parking', pts: [{x:615.77,y:472}, {x:719.82,y:532.073}, {x:650.27,y:641}, {x:548.77,y:584.5}] },
   { id: 'market', pts: parseRect(392.144, 776.016, 92.5861, 72.9416, -30, 392.144, 776.016) },
   { id: 'home', pts: parseRect(103, 927, 188, 50.8487, -30, 103, 927) },

@@ -28,7 +28,7 @@ export default function HitboxOverlay({ visible }) {
           <rect opacity="0.3" x="1024.81" y="708.7" width="116" height="91.6224" transform="rotate(30 1024.81 708.7)" fill="#F30000"/>
           <rect opacity="0.3" x="1393.08" y="463.796" width="104.046" height="98.631" transform="rotate(30 1393.08 463.796)" fill="#FF0000"/>
           <rect opacity="0.3" x="718" y="102.933" width="87.8652" height="77.1384" transform="rotate(-30 718 102.933)" fill="#FF0000"/>
-          <rect opacity="0.3" x="1272.94" y="875.544" width="131.552" height="82.6615" transform="rotate(30 1272.94 875.544)" fill="#FF0000"/>
+          <rect opacity="0.3" x="1272.94" y="875.544" width="131.552" height="90.0503" transform="rotate(30 1272.94 875.544)" fill="#FF0000"/>
           <path opacity="0.3" d="M615.77 472L719.82 532.073L650.27 641L548.77 584.5L615.77 472Z" fill="#FF0000"/>
           <rect opacity="0.3" x="392.144" y="776.016" width="92.5861" height="72.9416" transform="rotate(-30 392.144 776.016)" fill="#FF0000"/>
           <rect opacity="0.3" x="103" y="927" width="188" height="50.8487" transform="rotate(-30 103 927)" fill="#FF0B0B"/>
