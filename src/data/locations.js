@@ -6,7 +6,7 @@ export const LOCATIONS = CONST_LOCATIONS.map(loc => {
   const updatedInteraction = loc.interaction
     ? {
       ...loc.interaction,
-      rotation: loc.interaction.rotation ? -loc.interaction.rotation : 0
+      rotation: loc.interaction.rotation || 0
     }
     : null;
 
@@ -14,7 +14,7 @@ export const LOCATIONS = CONST_LOCATIONS.map(loc => {
   const updatedInteractions = loc.interactions
     ? loc.interactions.map(inter => ({
         ...inter,
-        rotation: inter.rotation ? -inter.rotation : 0
+        rotation: inter.rotation || 0
       }))
     : null;
 

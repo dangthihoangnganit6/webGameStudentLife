@@ -1,9 +1,10 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import useGameStore from './store/useGameStore';
 import useKeyboard from './hooks/useKeyboard';
-import { calculateNextMove, getDistance } from './game/movement';
+import { calculateNextMove } from './game/movement';
 import { MAP_CONFIG } from './game/constants';
 import { LOCATIONS } from './data/locations';
+import { OBSTACLE_POLYGONS, INTERACTION_POLYGONS, isPointInPolygon } from './game/hitboxes';
 import GameLayout from './components/GameLayout';
 
 const isPointInRotatedRect = (px, py, rect) => {
@@ -313,38 +314,41 @@ function App() {
 
         const speed = state.playerStats.isRidingBicycle ? MAP_CONFIG.CHARACTER_SPEED * 1.5 : MAP_CONFIG.CHARACTER_SPEED;
         const nextPos = calculateNextMove(state.position, moveKey, speed, { width: MAP_CONFIG.WIDTH, height: MAP_CONFIG.HEIGHT }, scaleFactor);
-        updatePosition(nextPos);
+        
+        const pts = state.playerStats.isRidingBicycle ? [-20, -10, 0, 10, 20].map(r => ({
+          x: nextPos.x + 10 + r * 0.866,
+          y: nextPos.y + 50 + r * 0.5
+        })) : [
+          { x: nextPos.x + 10, y: nextPos.y + 50 }
+        ];
 
-        const nearby = LOCATIONS.find(loc => {
-          if (!loc.interaction && !loc.interactions) return false;
-          // Coi như mô hình (không thể vào) nếu chưa nhận việc gia sư
-          if (loc.id === 'student_house' && !state.playerStats.hasTutorJob) return false;
-
-          const checkCollision = (interaction) => {
-            const interactRect = {
-              ...interaction,
-              x: interaction.x + 10,
-              y: interaction.y + 25
-            };
-
-            const pts = state.playerStats.isRidingBicycle ? [-20, -10, 0, 10, 20].map(r => ({
-              px: nextPos.x + 10 + r * 0.866, // cos(30deg)
-              py: nextPos.y + 50 + r * 0.5    // sin(30deg)
-            })) : [
-              { px: nextPos.x + 10, py: nextPos.y + 50 }
-            ];
-
-            return pts.some(p => isPointInRotatedRect(p.px, p.py, interactRect));
-          };
-
-          if (loc.interactions && loc.interactions.length > 0) {
-            return loc.interactions.some(checkCollision);
-          }
-          if (loc.interaction) {
-            return checkCollision(loc.interaction);
-          }
-          return false;
+        const isColliding = OBSTACLE_POLYGONS.some(polygon => {
+          return pts.some(p => isPointInPolygon(p, polygon));
         });
+
+        if (!isColliding) {
+          updatePosition(nextPos);
+        }
+
+        const finalPos = isColliding ? state.position : nextPos;
+        const currentPts = isColliding ? (state.playerStats.isRidingBicycle ? [-20, -10, 0, 10, 20].map(r => ({
+          x: finalPos.x + 10 + r * 0.866,
+          y: finalPos.y + 50 + r * 0.5
+        })) : [
+          { x: finalPos.x + 10, y: finalPos.y + 50 }
+        ]) : pts;
+
+        let nearby = null;
+        const activePolygon = INTERACTION_POLYGONS.find(poly => {
+          return currentPts.some(p => isPointInPolygon(p, poly.pts));
+        });
+
+        if (activePolygon) {
+          const loc = LOCATIONS.find(l => l.id === activePolygon.id);
+          if (loc && !(loc.id === 'student_house' && !state.playerStats.hasTutorJob)) {
+            nearby = loc;
+          }
+        }
 
         if (nearby) {
           if (!state.isModalOpen && showPrompt?.id !== nearby.id && !state.isHospitalized) {

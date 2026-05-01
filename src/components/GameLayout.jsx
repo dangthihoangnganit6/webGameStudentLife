@@ -11,8 +11,9 @@ import ElectricityBillOverlay from './ElectricityBillOverlay';
 import GameOver from './GameOver';
 import WaitingOverlay from './WaitingOverlay';
 import StartScreen from './StartScreen';
+import HitboxOverlay from './HitboxOverlay';
 import { X, GraduationCap, Zap, Coins, Clock, User, BookOpen, Briefcase, Heart, Bike } from 'lucide-react';
-import { MAP_CONFIG } from '../game/constants';
+import { MAP_CONFIG, OBSTACLES } from '../game/constants';
 import { LOCATIONS } from '../data/locations';
 
 import pathImage from '../assets/path.png';
@@ -294,34 +295,7 @@ export default function GameLayout({ appState }) {
 
                   return (
                     <React.Fragment key={loc.id}>
-                      {showDebug && (loc.interaction ? [loc.interaction] : loc.interactions || []).map((inter, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            position: 'absolute',
-                            left: inter.x + 10,
-                            top: inter.y + 25,
-                            width: inter.w,
-                            height: inter.h,
-                            transform: `rotate(${inter.rotation}deg)`,
-                            transformOrigin: 'center',
-                            backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                            border: '2px solid rgba(255, 0, 0, 0.5)',
-                            zIndex: 2000,
-                            pointerEvents: 'none',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '8px',
-                            fontWeight: 'black',
-                            textAlign: 'center'
-                          }}
-                        >
-                          {loc.name}
-                        </div>
-                      ))}
+
                       <img
                         src={IMAGE_MAP[loc.image]}
                         alt={loc.name}
@@ -340,6 +314,9 @@ export default function GameLayout({ appState }) {
                     </React.Fragment>
                   );
                 })}
+
+                {/* Hiển thị vùng va chạm (Obstacles) & Interactions (SVG Overlay) */}
+                <HitboxOverlay visible={showDebug} />
 
                 {/* Debug Interaction Point */}
                 {showDebug && (
