@@ -57,12 +57,12 @@ export default function StartScreen({ onStart }) {
             height: '53px',
             left: '90px',
             top: '57px',
-            fontFamily: '"Bungee Outline", sans-serif',
+            fontFamily: '"Bungee Inline", sans-serif',
             fontStyle: 'normal',
             fontWeight: 400,
             fontSize: '40px',
             lineHeight: '30px',
-            color: '#000000',
+            color: '#DBEAFE',
           }}
         >
           CHƠI

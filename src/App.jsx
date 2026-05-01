@@ -116,13 +116,10 @@ function App() {
   // Term Sync & Expulsion Logic
   useEffect(() => {
     if (!isGameStarted) return;
-    let startTime = localStorage.getItem('termStartTime');
-    if (!startTime) {
-      startTime = Date.now().toString();
-      localStorage.setItem('termStartTime', startTime);
-      updatePlayerStats({ termStartTime: parseInt(startTime) });
-    } else if (!playerStats.termStartTime) {
-      updatePlayerStats({ termStartTime: parseInt(startTime) });
+    
+    if (!playerStats.termStartTime) {
+      updatePlayerStats({ termStartTime: Date.now() });
+      return;
     }
 
     const termTimer = setInterval(() => {
@@ -130,7 +127,7 @@ function App() {
         clearInterval(termTimer);
         return;
       }
-      const startValue = playerStats.termStartTime || parseInt(startTime);
+      const startValue = playerStats.termStartTime;
       const now = Date.now();
       const elapsed = (now - startValue) / 1000; // in seconds
       const remaining = Math.max(0, 300 - elapsed);
@@ -138,7 +135,7 @@ function App() {
 
       // Expulsion logic only if not paid
       if (remaining <= 0 && !playerStats.isPaid) {
-        updatePlayerStats({ isExpelled: true });
+        updatePlayerStats({ isExpelled: true, expulsionReason: 'enrollment' });
         clearInterval(termTimer);
       }
     }, 1000);

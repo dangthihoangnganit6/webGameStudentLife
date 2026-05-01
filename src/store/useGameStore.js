@@ -152,7 +152,6 @@ const useGameStore = create((set) => ({
 
   resetSchoolData: () => {
     const now = Date.now();
-    localStorage.setItem('termStartTime', now);
     set((state) => ({
       playerStats: {
         ...state.playerStats,
@@ -186,7 +185,6 @@ const useGameStore = create((set) => ({
   },
 
   resetGame: () => {
-    localStorage.removeItem('termStartTime');
     set((state) => ({
       stats: {
         energy: 100,
@@ -248,7 +246,6 @@ const useGameStore = create((set) => ({
       activeLocation: null,
       interactionStep: 'ask',
     }));
-    localStorage.setItem('termStartTime', Date.now());
   },
 
   setCooking: (cooking) => set({ isCooking: cooking }),

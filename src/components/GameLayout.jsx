@@ -34,6 +34,11 @@ import shopImage from '../assets/shop.png';
 import coffeeImage from '../assets/coffee.png';
 import university1Image from '../assets/university1.png';
 
+import studyImage from '../assets/study.png';
+import workImage from '../assets/work.png';
+import energyImage from '../assets/energy.png';
+import parkingImage from '../assets/parking.png';
+
 import background1 from '../assets/background1.png';
 import background2 from '../assets/background2.png';
 import background3 from '../assets/background3.png';
@@ -509,28 +514,28 @@ export default function GameLayout({ appState }) {
           <div className="flex flex-col items-start gap-8 w-full max-w-[1667px] mx-auto">
             <div className="font-semibold text-2xl text-[#0B1C30]">Hướng dẫn chơi Student Life</div>
 
-            <div className="flex flex-row justify-between items-start gap-6 w-full h-[498px] relative">
+            <div className="flex flex-row justify-between items-stretch gap-6 w-full relative">
               {/* Học tập */}
               <div className="box-border flex flex-col items-center py-6 px-6 pb-11 w-full flex-1 bg-white border border-[#F1F5F9] shadow-sm rounded-xl">
                 <div className="flex flex-col items-start pb-4 w-16 h-20">
                   <div className="flex justify-center items-center w-16 h-16 bg-[#EFF6FF] rounded-full">
-                    <BookOpen className="w-5 h-5 text-[#2563EB]" />
+                    <img src={studyImage} alt="Học tập" className="w-16 h-16 object-contain" />
                   </div>
                 </div>
                 <div className="flex flex-col items-start pb-2">
                   <div className="font-bold text-lg text-center text-[#0B1C30]">Học tập</div>
                 </div>
-                <div className="flex flex-col items-center px-1">
-                  <p className="font-bold text-sm leading-5 text-[#64748B] text-center whitespace-pre-line">
-                    Bước 1: Đăng ký tín chỉ: Di chuyển đến Trường học để chọn số lượng tín chỉ và độ khó môn học.
+                <div className="flex flex-col items-start px-1 w-full flex-1">
+                  <p className="font-medium text-sm leading-5 text-[#64748B] text-left">
+                    <span className="font-bold">Bước 1:</span> Đăng ký tín chỉ: Di chuyển đến Trường học để chọn số lượng tín chỉ và độ khó môn học.
                     <br /><br />
-                    Bước 2: Học phí: Thanh toán ngay nếu đủ tiền. Nếu không, hóa đơn sẽ được gửi về cho phụ huynh.
+                    <span className="font-bold">Bước 2:</span> Học phí: Thanh toán ngay nếu đủ tiền. Nếu không, hóa đơn sẽ được gửi về cho phụ huynh.
                     <br /><br />
-                    Bước 3: Hỗ trợ: Quay Về nhà để lấy tiền từ bố mẹ khi nợ học phí.
+                    <span className="font-bold">Bước 3:</span> Hỗ trợ: Quay Về nhà để lấy tiền từ bố mẹ khi nợ học phí.
                     <br /><br />
-                    Bước 4: Hoàn tất: Đem tiền quay lại Trường học để nộp học phí.
+                    <span className="font-bold">Bước 4:</span> Hoàn tất: Đem tiền quay lại Trường học để nộp học phí.
                     <br /><br />
-                    Bước 5: Vào học: Sau khi hoàn thành thủ tục, bạn có thể bắt đầu vào học mỗi khi có lớp mở.
+                    <span className="font-bold">Bước 5:</span> Vào học: Sau khi hoàn thành thủ tục, bạn có thể bắt đầu vào học mỗi khi có lớp mở.
                   </p>
                 </div>
               </div>
@@ -539,21 +544,21 @@ export default function GameLayout({ appState }) {
               <div className="box-border flex flex-col items-center py-6 px-6 pb-11 w-full flex-1 bg-white border border-[#F1F5F9] shadow-sm rounded-xl">
                 <div className="flex flex-col items-start pb-4 w-16 h-20">
                   <div className="flex justify-center items-center w-16 h-16 bg-[#F0FDF4] rounded-full">
-                    <Briefcase className="w-5 h-5 text-[#16A34A]" />
+                    <img src={workImage} alt="Việc làm" className="w-16 h-16 object-contain" />
                   </div>
                 </div>
                 <div className="flex flex-col items-start pb-2">
                   <div className="font-bold text-lg text-center text-[#0B1C30]">Việc làm</div>
                 </div>
-                <div className="flex flex-col items-center px-2">
-                  <p className="font-bold text-sm leading-5 text-[#64748B] text-center whitespace-pre-line">
-                    Bước 1: Tìm việc: Di chuyển đến trung tâm môi giới để tìm kiếm công việc phù hợp với năng lực của bạn.
+                <div className="flex flex-col items-start px-2 w-full flex-1">
+                  <p className="font-medium text-sm leading-5 text-[#64748B] text-left">
+                    <span className="font-bold">Bước 1:</span> Tìm việc: Di chuyển đến trung tâm môi giới để tìm kiếm công việc phù hợp với năng lực của bạn.
                     <br /><br />
-                    Bước 2: Tiếp nhận: Khi nhận việc, hệ thống sẽ thông báo cụ thể về mức lương, chi phí sức khỏe và phí môi giới (nếu có).
+                    <span className="font-bold">Bước 2:</span> Tiếp nhận: Khi nhận việc, hệ thống sẽ thông báo cụ thể về mức lương, chi phí sức khỏe và phí môi giới (nếu có).
                     <br /><br />
-                    Bước 3: Thanh toán phí: Thực hiện trả phí môi giới để nhận được địa chỉ nơi làm việc chính xác.
+                    <span className="font-bold">Bước 3:</span> Thanh toán phí: Thực hiện trả phí môi giới để nhận được địa chỉ nơi làm việc chính xác.
                     <br /><br />
-                    Bước 4: Bắt đầu làm: Di chuyển đến địa chỉ đã được thông báo trên bản đồ để bắt đầu làm việc và kiếm thu nhập.
+                    <span className="font-bold">Bước 4:</span> Bắt đầu làm: Di chuyển đến địa chỉ đã được thông báo trên bản đồ để bắt đầu làm việc và kiếm thu nhập.
                   </p>
                 </div>
               </div>
@@ -562,23 +567,23 @@ export default function GameLayout({ appState }) {
               <div className="box-border flex flex-col items-center py-6 px-6 pb-11 w-full flex-1 bg-white border border-[#F1F5F9] shadow-sm rounded-xl">
                 <div className="flex flex-col items-start pb-4 w-16 h-20">
                   <div className="flex justify-center items-center w-16 h-16 bg-[#FEF2F2] rounded-full">
-                    <Heart className="w-5 h-5 text-[#DC2626]" />
+                    <img src={energyImage} alt="Sức khỏe" className="w-16 h-16 object-contain" />
                   </div>
                 </div>
                 <div className="flex flex-col items-start pb-2">
                   <div className="font-bold text-lg text-center text-[#0B1C30]">Sức khỏe</div>
                 </div>
-                <div className="flex flex-col items-center px-2">
-                  <p className="font-bold text-sm leading-5 text-[#64748B] text-center whitespace-pre-line">
-                    Bước 1: Quản lý năng lượng: Mọi hoạt động di chuyển và làm việc đều tiêu tốn năng lượng. Nếu năng lượng ở mức yếu, bạn sẽ bị đình chỉ học tập và làm việc.
+                <div className="flex flex-col items-start px-2 w-full flex-1">
+                  <p className="font-medium text-sm leading-5 text-[#64748B] text-left">
+                    <span className="font-bold">Bước 1:</span> Quản lý năng lượng: Mọi hoạt động di chuyển và làm việc đều tiêu tốn năng lượng. Nếu năng lượng ở mức yếu, bạn sẽ bị đình chỉ học tập và làm việc.
                     <br /><br />
-                    Bước 2: Chọn nơi cư trú: Nếu bạn không thuê nhà trọ, năng lượng sẽ sụt giảm nhanh hơn.
+                    <span className="font-bold">Bước 2:</span> Chọn nơi cư trú: Nếu bạn không thuê nhà trọ, năng lượng sẽ sụt giảm nhanh hơn.
                     <br /><br />
-                    Bước 3: Nạp năng lượng tức thời: Di chuyển đến căn tin để mua đồ ăn và hồi phục thể lực ngay lập tức.
+                    <span className="font-bold">Bước 3:</span> Nạp năng lượng tức thời: Di chuyển đến căn tin để mua đồ ăn và hồi phục thể lực ngay lập tức.
                     <br /><br />
-                    Bước 4: Nghỉ ngơi dài hạn: ghé siêu thị mua thực phẩm về nhà trọ tự nấu hoặc quay về nhà ngủ để hồi phục hoàn toàn.
+                    <span className="font-bold">Bước 4:</span> Nghỉ ngơi dài hạn: ghé siêu thị mua thực phẩm về nhà trọ tự nấu hoặc quay về nhà ngủ để hồi phục hoàn toàn.
                     <br /><br />
-                    Bước 5: Bảo trì thể lực: Đi Khám sức khỏe định kỳ để nhận hiệu ứng hỗ trợ.
+                    <span className="font-bold">Bước 5:</span> Bảo trì thể lực: Đi Khám sức khỏe định kỳ để nhận hiệu ứng hỗ trợ, giúp năng lượng không bị tụt trong một khoảng thời gian nhất định.
                   </p>
                 </div>
               </div>
@@ -587,21 +592,21 @@ export default function GameLayout({ appState }) {
               <div className="box-border flex flex-col items-center py-6 px-6 pb-11 w-full flex-1 bg-white border border-[#F1F5F9] shadow-sm rounded-xl">
                 <div className="flex flex-col items-start pb-4 w-16 h-20">
                   <div className="flex justify-center items-center w-16 h-16 bg-[#F8FAFC] rounded-full">
-                    <Bike className="w-5 h-5 text-[#475569]" />
+                    <img src={parkingImage} alt="Phương tiện" className="w-16 h-16 object-contain" />
                   </div>
                 </div>
                 <div className="flex flex-col items-start pb-2">
                   <div className="font-bold text-lg text-center text-[#0B1C30]">Phương tiện</div>
                 </div>
-                <div className="flex flex-col items-center px-1">
-                  <p className="font-bold text-sm leading-5 text-[#64748B] text-center whitespace-pre-line">
-                    Bước 1: Sở hữu xe: Di chuyển đến Trạm bán xe để chọn mua phương tiện. Xe sẽ giúp bạn Di chuyển nhanh hơn đáng kể trên bản đồ so với việc đi bộ.
+                <div className="flex flex-col items-start px-1 w-full flex-1">
+                  <p className="font-medium text-sm leading-5 text-[#64748B] text-left">
+                    <span className="font-bold">Bước 1:</span> Sở hữu xe: Di chuyển đến Trạm bán xe để chọn mua phương tiện. Xe sẽ giúp bạn Di chuyển nhanh hơn đáng kể trên bản đồ so với việc đi bộ.
                     <br /><br />
-                    Bước 2: Sử dụng bãi đỗ: Bạn có thể dừng và gửi phương tiện tại các Bãi đỗ xe được bố trí trên toàn thành phố.
+                    <span className="font-bold">Bước 2:</span> Sử dụng bãi đỗ: Bạn có thể dừng và gửi phương tiện tại các Bãi đỗ xe được bố trí trên toàn thành phố.
                     <br /><br />
-                    Bước 3: Chi phí vận hành: Khi đỗ xe tại bãi, bạn sẽ phải thanh toán một khoản Phí gửi xe.
+                    <span className="font-bold">Bước 3:</span> Chi phí vận hành: Khi đỗ xe tại bãi, bạn sẽ phải thanh toán một khoản Phí gửi xe.
                     <br /><br />
-                    Bước 4: Quản lý phương tiện: Bạn có thể quay lại Bãi đỗ xe để lấy xe hoặc gửi xe vào Bất kỳ lúc nào để thuận tiện cho việc học tập và làm việc.
+                    <span className="font-bold">Bước 4:</span> Quản lý phương tiện: Bạn có thể quay lại Bãi đỗ xe để lấy xe hoặc gửi xe vào Bất kỳ lúc nào để thuận tiện cho việc học tập và làm việc.
                   </p>
                 </div>
               </div>
