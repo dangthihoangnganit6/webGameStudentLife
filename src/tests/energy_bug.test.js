@@ -24,7 +24,7 @@ describe('Energy and Housing Bug', () => {
     expect(useGameStore.getState().playerStats.rentedRoom).toEqual(testRoom);
   });
 
-  it('should decrease energy when homeless', () => {
+  it('should set rentedRoom to null when homeless', () => {
     // 1. Setup: No housing
     useGameStore.setState((state) => ({
       stats: { ...state.stats, energy: 100 },

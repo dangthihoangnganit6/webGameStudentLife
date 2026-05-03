@@ -14,16 +14,24 @@ const checkDropout = (missedClasses) => {
 
 describe('Attendance System Logic', () => {
   describe('Interval Calculation (Nhiệm vụ 1)', () => {
-    it('should calculate base interval for Easy difficulty', () => {
-      const credits = 20;
-      const interval = calculateInterval(credits, 'easy');
-      expect(interval).toBe(4); // 20 / 5 = 4
+    it('should calculate interval for 20 credits on Easy difficulty', () => {
+      expect(calculateInterval(20, 'easy')).toBe(4); // 20 / 5 = 4
     });
 
-    it('should halve the interval for Hard difficulty', () => {
-      const credits = 20;
-      const interval = calculateInterval(credits, 'hard');
-      expect(interval).toBe(2); // (20 / 5) / 2 = 2
+    it('should calculate interval for 20 credits on Hard difficulty', () => {
+      expect(calculateInterval(20, 'hard')).toBe(2); // (20 / 5) / 2 = 2
+    });
+
+    it('should calculate interval for 15 credits on Easy difficulty', () => {
+      expect(calculateInterval(15, 'easy')).toBe(3); // 15 / 5 = 3
+    });
+
+    it('should calculate interval for 15 credits on Hard difficulty', () => {
+      expect(calculateInterval(15, 'hard')).toBe(1.5); // (15 / 5) / 2 = 1.5
+    });
+
+    it('should handle zero credits without crashing', () => {
+      expect(calculateInterval(0, 'easy')).toBe(0); 
     });
   });
 
