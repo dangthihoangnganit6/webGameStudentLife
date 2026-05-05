@@ -140,9 +140,9 @@ export default function GameLayout({ appState }) {
               <div className="relative">
                 <div className="w-10 h-10 rounded-full border-2 border-indigo-400/50 overflow-hidden shadow-md transition-transform group-hover:scale-105">
                   {session?.user?.user_metadata?.avatar_url ? (
-                    <img 
-                      src={session.user.user_metadata.avatar_url} 
-                      alt="Avatar" 
+                    <img
+                      src={session.user.user_metadata.avatar_url}
+                      alt="Avatar"
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -153,14 +153,14 @@ export default function GameLayout({ appState }) {
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#0F172A] rounded-full shadow-sm"></div>
               </div>
-              
+
               <div className="flex flex-col mr-2">
                 <span className="text-white font-bold text-sm tracking-tight leading-none group-hover:text-indigo-300 transition-colors">
                   {session?.user?.user_metadata?.full_name || 'Học viên'}
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest bg-indigo-400/10 px-1.5 py-0.5 rounded">Pro Player</span>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="text-white/30 text-[9px] uppercase tracking-widest font-black hover:text-red-400 transition-colors"
                   >
@@ -347,8 +347,8 @@ export default function GameLayout({ appState }) {
                       type="expelled"
                       title="Bạn đã bị đuổi học"
                       message={playerStats.expulsionReason === 'attendance'
-                        ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
-                        : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn. Hãy cố gắng hơn ở kỳ tới!"
+                        ? "Vì vắng học quá 3 buổi, nhà trường đã ra quyết định thôi học đối với bạn."
+                        : "Vì không đăng ký tín chỉ đúng hạn, nhà trường đã ra quyết định thôi học đối với bạn."
                       }
                     />
                   )}
@@ -361,7 +361,7 @@ export default function GameLayout({ appState }) {
                       }}
                       type="stroke"
                       title="Đột quỵ không qua khỏi"
-                      message="Vì kiệt sức và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!"
+                      message="Vì học tập và làm việc quá sức mà không chú ý đến sức khỏe, bạn đã bị đột quỵ không qua khỏi. Hãy biết cân bằng cuộc sống!"
                     />
                   )}
 
@@ -556,12 +556,12 @@ export default function GameLayout({ appState }) {
               {systemAlert && !playerStats.isExpelled && !playerStats.isStroke && (
                 <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
                   <div className="bg-slate-900 border-2 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500"
-                       style={{ 
-                         borderColor: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B'),
-                         boxShadow: systemAlert.type === 'income' ? '0 0 50px rgba(16,185,129,0.2)' : (systemAlert.type === 'expense' ? '0 0 50px rgba(244,63,94,0.2)' : '0 0 50px rgba(245,158,11,0.2)')
-                       }}>
+                    style={{
+                      borderColor: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B'),
+                      boxShadow: systemAlert.type === 'income' ? '0 0 50px rgba(16,185,129,0.2)' : (systemAlert.type === 'expense' ? '0 0 50px rgba(244,63,94,0.2)' : '0 0 50px rgba(245,158,11,0.2)')
+                    }}>
                     <h3 className="text-2xl font-black uppercase mb-4 tracking-widest"
-                        style={{ color: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B') }}>
+                      style={{ color: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B') }}>
                       {systemAlert.title}
                     </h3>
                     <p className="text-white text-lg mb-8 leading-relaxed font-bold">
