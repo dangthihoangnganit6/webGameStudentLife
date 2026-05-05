@@ -65,7 +65,7 @@ const IMAGE_MAP = {
 };
 
 export default function GameLayout({ appState }) {
-  // Lấy các state nội bộ & handler function được truyền từ App.jsx
+  // Consolidate all appState destructuring
   const {
     notifications, setNotifications,
     timeLeftToEnroll,
@@ -76,7 +76,10 @@ export default function GameLayout({ appState }) {
     showDebug, setShowDebug,
     isGameStarted, setIsGameStarted,
     frame, scaleFactor, DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef,
-    handleAction
+    handleAction,
+    signInWithGoogle, handleLogout,
+    session,
+    showLogin, setShowLogin, handleLoginSuccess
   } = appState;
 
   // Lấy dữ liệu global từ store
@@ -90,7 +93,7 @@ export default function GameLayout({ appState }) {
     isTutoring, tutoringProgress,
     isWaiting, waitingProgress,
     payElectricityBill,
-    resetGame
+    resetGame,
   } = useGameStore();
 
   const formatTime = (seconds) => {
@@ -99,18 +102,124 @@ export default function GameLayout({ appState }) {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const countdownTime = playerStats.isPaid && playerStats.isEnrolled
-    ? (isClassStarting ? "ĐANG DIỄN RA" : formatTime(nextClassTimer))
+  const countdownTime = playerStats.isEnrolled
+    ? (playerStats.isPaid
+      ? (isClassStarting ? "ĐANG DIỄN RA" : formatTime(nextClassTimer))
+      : "CHỜ NỘP TIỀN")
     : formatTime(timeLeftToEnroll);
 
   return (
     <div className="w-full min-h-screen bg-[#E6E9D7] flex flex-col items-center font-sans overflow-x-hidden relative">
-      {/* Header - TopAppBar */}
-      <div className="flex flex-row items-center justify-between px-6 w-full h-[67px] bg-[#0F172A] border-b border-white/10 shadow-sm z-50 shrink-0">
-        <div className="text-white font-extrabold text-2xl tracking-tight">Student Life</div>
-        <div className="flex flex-row items-start gap-4">
-          <button className="flex justify-center items-center px-6 py-2 w-fit min-w-fit h-[36px] bg-white rounded-full text-[#0F172A] font-bold text-base shadow-sm hover:bg-slate-50 transition-colors whitespace-nowrap">Đăng nhập</button>
-          <button className="flex justify-center items-center px-6 py-2 w-fit min-w-fit h-[36px] bg-white rounded-full text-[#0F172A] font-bold text-base shadow-sm hover:bg-slate-50 transition-colors whitespace-nowrap">Đăng ký</button>
+      {/* Header - TopAppBar – Figma spec */}
+      <div
+        className="flex flex-row items-center justify-between px-6 w-full shrink-0 sticky top-0 z-[1000]"
+        style={{
+          height: 67,
+          background: '#0F172A',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0px 1px 2px rgba(0,0,0,0.05)',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="text-white select-none"
+            style={{
+              fontFamily: "'Manrope', sans-serif",
+              fontWeight: 800,
+              fontSize: 24,
+              lineHeight: '32px',
+              letterSpacing: '-0.6px',
+            }}
+          >
+            Student Life
+          </span>
+        </div>
+        <div className="flex flex-row items-center gap-4">
+          {session ? (
+            <div className="group flex items-center gap-4 bg-white/5 pl-1 pr-1 py-1 rounded-full border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer shadow-inner">
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full border-2 border-indigo-400/50 overflow-hidden shadow-md transition-transform group-hover:scale-105">
+                  {session?.user?.user_metadata?.avatar_url ? (
+                    <img 
+                      src={session.user.user_metadata.avatar_url} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white font-black text-lg bg-gradient-to-br from-indigo-500 to-purple-500 uppercase">
+                      {session?.user?.user_metadata?.full_name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#0F172A] rounded-full shadow-sm"></div>
+              </div>
+              
+              <div className="flex flex-col mr-2">
+                <span className="text-white font-bold text-sm tracking-tight leading-none group-hover:text-indigo-300 transition-colors">
+                  {session?.user?.user_metadata?.full_name || 'Học viên'}
+                </span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest bg-indigo-400/10 px-1.5 py-0.5 rounded">Pro Player</span>
+                  <button 
+                    onClick={handleLogout}
+                    className="text-white/30 text-[9px] uppercase tracking-widest font-black hover:text-red-400 transition-colors"
+                  >
+                    Thoát
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              {/* Đăng nhập – Figma w=124 pill */}
+              <button
+                onClick={() => setShowLogin(true)}
+                style={{
+                  width: 124,
+                  height: 36,
+                  background: '#FFFFFF',
+                  borderRadius: 9999,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  lineHeight: '24px',
+                  color: '#0F172A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                className="transition-all hover:opacity-85 active:scale-95"
+              >
+                Đăng nhập
+              </button>
+              {/* Đăng ký – Figma w=135 pill + shadow */}
+              <button
+                onClick={() => appState.setShowSignUp?.(true)}
+                style={{
+                  width: 135,
+                  height: 36,
+                  background: '#FFFFFF',
+                  borderRadius: 9999,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  lineHeight: '24px',
+                  color: '#0F172A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -2px rgba(0,0,0,0.1)',
+                }}
+                className="transition-all hover:opacity-85 active:scale-95"
+              >
+                Đăng ký
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -119,7 +228,7 @@ export default function GameLayout({ appState }) {
         <div className="flex flex-row items-start gap-6 w-full flex-1">
 
           {/* Aside - SideNavBar (Left Column) */}
-          <div className="box-border flex flex-col items-start p-6 gap-4 w-[275px] h-[1049px] bg-white/40 border border-white/30 shadow-sm backdrop-blur-md rounded-xl shrink-0 overflow-y-auto">
+          <div className="box-border flex flex-col items-start p-6 gap-4 w-[275px] h-[1049px] bg-white/40 border border-white/30 shadow-sm backdrop-blur-md rounded-xl shrink-0 overflow-y-auto relative z-50">
             {/* Header section in sidebar */}
             <div className="flex flex-col w-[225px] gap-4">
               {/* Stat 4 - Header */}
@@ -213,7 +322,7 @@ export default function GameLayout({ appState }) {
           {/* GAME VIEWPORT */}
           <div
             ref={gameContainerRef}
-            className="relative overflow-hidden shadow-md flex-1 h-[1049px] rounded-xl flex items-center justify-center isolate m-0 p-0"
+            className="relative overflow-hidden shadow-md flex-1 h-[1049px] rounded-xl flex items-center justify-center isolate m-0 p-0 bg-slate-900 z-10"
           >
             {/* GAME CONTAINER (SCALED) */}
             <div
@@ -402,121 +511,126 @@ export default function GameLayout({ appState }) {
                       </div>
                     </div>
                   </div>
-
-                  {/* Notifications */}
-                  <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-[99999] w-full max-w-md pointer-events-none">
-                    {notifications.map(n => (
-                      <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border-2 border-white/10 text-white px-8 py-5 rounded-[24px] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-right duration-500 pointer-events-auto">
-                        <span className="text-lg font-black leading-tight tracking-tight">{n.text}</span>
-                        <button
-                          onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
-                          className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
-                        >
-                          <X className="w-6 h-6 text-white/40" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Exhausted Popup */}
-                  {showExhaustedPopup && (
-                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                      <div className="bg-slate-900 border-2 border-red-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(239,68,68,0.3)] animate-in zoom-in-95 duration-500">
-                        <h3 className="text-3xl font-black text-red-500 uppercase mb-6 tracking-widest">CẢNH BÁO</h3>
-                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                          Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
-                        </p>
-                        <button
-                          onClick={handleExhaustedOk}
-                          className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                        >
-                          OK
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* System Alert Popup */}
-                  {systemAlert && (
-                    <div className="absolute inset-0 z-[16000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                      <div className="bg-slate-900 border-2 p-10 rounded-[32px] max-w-lg text-center shadow-2xl animate-in zoom-in-95 duration-500"
-                           style={{ 
-                             borderColor: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B'),
-                             boxShadow: systemAlert.type === 'income' ? '0 0 100px rgba(16,185,129,0.3)' : (systemAlert.type === 'expense' ? '0 0 100px rgba(244,63,94,0.3)' : '0 0 100px rgba(245,158,11,0.3)')
-                           }}>
-                        <h3 className="text-3xl font-black uppercase mb-6 tracking-widest"
-                            style={{ color: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B') }}>
-                          {systemAlert.title}
-                        </h3>
-                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                          {systemAlert.message}
-                        </p>
-                        <button
-                          onClick={() => {
-                            if (systemAlert.onOk) systemAlert.onOk();
-                            setSystemAlert(null);
-                          }}
-                          className="text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                          style={{ backgroundColor: systemAlert.type === 'income' ? '#059669' : (systemAlert.type === 'expense' ? '#E11D48' : '#D97706') }}
-                        >
-                          OK
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tutor Alert */}
-                  {showTutorAlert && (
-                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                      <div className="bg-slate-900 border-2 border-indigo-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(99,102,241,0.3)] animate-in zoom-in-95 duration-500">
-                        <h3 className="text-3xl font-black text-indigo-500 uppercase mb-6 tracking-widest">THÔNG BÁO</h3>
-                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                          Nhà học sinh ở cạnh nhà bạn!
-                        </p>
-                        <button
-                          onClick={() => {
-                            setShowTutorAlert(false);
-                          }}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                        >
-                          OK
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Shipper Alert */}
-                  {showShipperAlert && (
-                    <div className="absolute inset-0 z-[15000] bg-black/85 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
-                      <div className="bg-slate-900 border-2 border-rose-500 p-10 rounded-[32px] max-w-lg text-center shadow-[0_0_100px_rgba(244,63,94,0.3)] animate-in zoom-in-95 duration-500">
-                        <h3 className="text-3xl font-black text-rose-500 uppercase mb-6 tracking-widest">THẤT BẠI</h3>
-                        <p className="text-white text-xl mb-10 leading-relaxed font-bold">
-                          Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
-                        </p>
-                        <button
-                          onClick={() => setShowShipperAlert(false)}
-                          className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-16 rounded-2xl text-xl hover:scale-105 transition-all shadow-xl"
-                        >
-                          OK
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Interaction Modal */}
-                  {isModalOpen && (
-                    <InteractionModal
-                      location={activeLocation}
-                      interactionStep={interactionStep}
-                      setInteractionStep={setInteractionStep}
-                      onClose={closeModal}
-                      onAction={handleAction}
-                      playerStats={playerStats}
-                      stats={stats}
-                      isClassStarting={isClassStarting}
-                    />
-                  )}
                 </>
+              )}
+            </div>
+
+            {/* UI Overlays (Constrained to Viewport) */}
+            <div className="absolute inset-0 pointer-events-none z-[100]">
+              {/* Notifications - Constrained and on top */}
+              {!playerStats.isExpelled && !playerStats.isStroke && (
+                <div className="absolute bottom-6 right-6 flex flex-col gap-3 w-full max-w-xs pointer-events-none z-[11000]">
+                  {notifications.map(n => (
+                    <div key={n.id} className="bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-right duration-500 pointer-events-auto">
+                      <span className="text-sm font-bold leading-tight">{n.text}</span>
+                      <button
+                        onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
+                        className="p-1 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+                      >
+                        <X className="w-4 h-4 text-white/40" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Exhausted Popup */}
+              {showExhaustedPopup && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
+                  <div className="bg-slate-900 border-2 border-red-500 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500">
+                    <h3 className="text-2xl font-black text-red-500 uppercase mb-4 tracking-widest">CẢNH BÁO</h3>
+                    <p className="text-white text-lg mb-8 leading-relaxed font-bold">
+                      Bạn đã kiệt sức và được ai đó đưa đến bệnh viện!
+                    </p>
+                    <button
+                      onClick={handleExhaustedOk}
+                      className="bg-red-600 hover:bg-red-500 text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* System Alert Popup */}
+              {systemAlert && !playerStats.isExpelled && !playerStats.isStroke && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
+                  <div className="bg-slate-900 border-2 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500"
+                       style={{ 
+                         borderColor: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B'),
+                         boxShadow: systemAlert.type === 'income' ? '0 0 50px rgba(16,185,129,0.2)' : (systemAlert.type === 'expense' ? '0 0 50px rgba(244,63,94,0.2)' : '0 0 50px rgba(245,158,11,0.2)')
+                       }}>
+                    <h3 className="text-2xl font-black uppercase mb-4 tracking-widest"
+                        style={{ color: systemAlert.type === 'income' ? '#10B981' : (systemAlert.type === 'expense' ? '#F43F5E' : '#F59E0B') }}>
+                      {systemAlert.title}
+                    </h3>
+                    <p className="text-white text-lg mb-8 leading-relaxed font-bold">
+                      {systemAlert.message}
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (systemAlert.onOk) systemAlert.onOk();
+                        setSystemAlert(null);
+                      }}
+                      className="text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
+                      style={{ backgroundColor: systemAlert.type === 'income' ? '#059669' : (systemAlert.type === 'expense' ? '#E11D48' : '#D97706') }}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tutor Alert */}
+              {showTutorAlert && !playerStats.isExpelled && !playerStats.isStroke && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
+                  <div className="bg-slate-900 border-2 border-indigo-500 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500">
+                    <h3 className="text-2xl font-black text-indigo-500 uppercase mb-4 tracking-widest">THÔNG BÁO</h3>
+                    <p className="text-white text-lg mb-8 leading-relaxed font-bold">
+                      Nhà học sinh ở cạnh nhà bạn!
+                    </p>
+                    <button
+                      onClick={() => setShowTutorAlert(false)}
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Shipper Alert */}
+              {showShipperAlert && !playerStats.isExpelled && !playerStats.isStroke && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
+                  <div className="bg-slate-900 border-2 border-rose-500 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500">
+                    <h3 className="text-2xl font-black text-rose-500 uppercase mb-4 tracking-widest">THẤT BẠI</h3>
+                    <p className="text-white text-lg mb-8 leading-relaxed font-bold">
+                      Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
+                    </p>
+                    <button
+                      onClick={() => setShowShipperAlert(false)}
+                      className="bg-rose-600 hover:bg-rose-500 text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Interaction Modal */}
+              {isModalOpen && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-[200]">
+                  <InteractionModal
+                    location={activeLocation}
+                    interactionStep={interactionStep}
+                    setInteractionStep={setInteractionStep}
+                    onClose={closeModal}
+                    onAction={handleAction}
+                    playerStats={playerStats}
+                    stats={stats}
+                    isClassStarting={isClassStarting}
+                  />
+                </div>
               )}
             </div>
           </div>

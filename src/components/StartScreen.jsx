@@ -6,7 +6,9 @@ import buttonImg from '../assets/button.png';
 export default function StartScreen({ onStart }) {
   return (
     <div className="absolute inset-0 w-full h-full bg-[#FFFFFF] m-0 p-0 overflow-hidden">
-      <div 
+
+      {/* Background image */}
+      <div
         className="absolute"
         style={{
           width: '1551px',
@@ -15,10 +17,12 @@ export default function StartScreen({ onStart }) {
           top: '-80px',
           backgroundImage: `url(${backgroundStart})`,
           backgroundSize: '100% 100%',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
       />
-      <div 
+
+      {/* Logo */}
+      <div
         className="absolute pointer-events-none"
         style={{
           width: '1432px',
@@ -27,12 +31,12 @@ export default function StartScreen({ onStart }) {
           top: '-178px',
           backgroundImage: `url(${logo})`,
           backgroundSize: '100% 100%',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
       />
-      
-      {/* Button container */}
-      <div 
+
+      {/* Play button */}
+      <div
         className="absolute cursor-pointer hover:scale-105 transition-transform"
         onClick={onStart}
         style={{
@@ -42,15 +46,15 @@ export default function StartScreen({ onStart }) {
           top: '444px',
         }}
       >
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             backgroundImage: `url(${buttonImg})`,
             backgroundSize: '100% 100%',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }}
         />
-        <div 
+        <div
           className="absolute flex items-center justify-center text-center select-none"
           style={{
             width: '165px',
@@ -68,6 +72,7 @@ export default function StartScreen({ onStart }) {
           CHƠI
         </div>
       </div>
+
     </div>
   );
 }
