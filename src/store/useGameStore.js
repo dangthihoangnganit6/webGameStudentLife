@@ -76,12 +76,16 @@ const useGameStore = create((set) => ({
   
   // Actions
   updateStats: (newStats) => set((state) => {
-    const evaluatedStats = typeof newStats === 'function' ? newStats(state.stats) : newStats;
-    if (state.playerStats.energyBuffTimer > 0 && evaluatedStats.energy !== undefined && evaluatedStats.energy < state.stats.energy) {
-      evaluatedStats.energy = state.stats.energy; // Prevent energy loss
+    const evaluated = typeof newStats === 'function'
+      ? newStats(state.stats)
+      : newStats;
+
+    if (evaluated.energy !== undefined) {
+      evaluated.energy = Math.min(100, Math.max(0, evaluated.energy));
     }
+
     return {
-      stats: { ...state.stats, ...evaluatedStats }
+      stats: { ...state.stats, ...evaluated }
     };
   }),
 
@@ -129,6 +133,17 @@ const useGameStore = create((set) => ({
   updateTimers: (next, checkIn) => set({ 
     nextClassTimer: next !== undefined ? next : 0, 
     checkInWindow: checkIn !== undefined ? checkIn : 0 
+  }),
+
+  incrementHospital: () => set((state) => {
+    const newCount = state.playerStats.hospitalCount + 1;
+    return {
+      playerStats: {
+        ...state.playerStats,
+        hospitalCount: newCount,
+        isStroke: newCount >= 3
+      }
+    };
   }),
 
   incrementMissed: () => set((state) => {
@@ -289,6 +304,41 @@ const useGameStore = create((set) => ({
       playerStats: { ...state.playerStats, rentTimer: 0 }
     };
   }),
+
+  payHospitalBill: () => set(state => {
+    const bill = state.playerStats.activeMedicalBill;
+    if (state.stats.money < bill) return {};
+
+    return {
+      stats: { ...state.stats, money: state.stats.money - bill },
+      playerStats: { ...state.playerStats, activeMedicalBill: 0 },
+      isHospitalized: false
+    };
+  }),
+
+  buyIngredient: (item) => set(state => {
+    if (state.stats.money < item.price) return {};
+
+    return {
+      stats: { ...state.stats, money: state.stats.money - item.price },
+      playerStats: {
+        ...state.playerStats,
+        inventory: [...state.playerStats.inventory, item]
+      }
+    };
+  }),
+
+  eatCanteenFood: (food) => set(state => {
+    if (state.stats.money < food.price) return {};
+
+    return {
+      stats: {
+        ...state.stats,
+        money: state.stats.money - food.price,
+        energy: Math.min(100, state.stats.energy + food.energy)
+      }
+    };
+  }),
   
   advanceTime: (minutes) => set((state) => {
     let { day, hour, minute } = state.stats.time;
@@ -308,6 +358,22 @@ const useGameStore = create((set) => ({
       }
     };
   }),
+
+  completeTutorJob: () => set(state => ({
+    stats: {
+      ...state.stats,
+      money: state.stats.money + 100000,
+      energy: Math.max(0, state.stats.energy - 10)
+    }
+  })),
+
+  completeWaiterJob: () => set(state => ({
+    stats: {
+      ...state.stats,
+      money: state.stats.money + 50000,
+      energy: Math.max(0, state.stats.energy - 10)
+    }
+  })),
 
   generateElectricityBill: (amount) => set((state) => ({
     playerStats: {
