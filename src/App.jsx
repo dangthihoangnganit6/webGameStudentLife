@@ -10,6 +10,7 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import { supabase, signInWithGoogle } from './lib/supabaseClient';
 import { useTutor } from './hooks/useTutor';
+import { useServer } from './hooks/useServer';
 
 function App() {
   const taskIntervalRef = React.useRef(null);
@@ -66,6 +67,7 @@ function App() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [hasStartedGuestMode, setHasStartedGuestMode] = useState(false);
   const { triggerMidLessonEvent, handleFinalEvent } = useTutor();
+  const { triggerMidShiftEvent, handleFinalShiftEvent } = useServer();
 
   // 1. Khởi tạo State session (mặc định là null)
   const [session, setSession] = useState(null);
@@ -538,14 +540,25 @@ function App() {
       case 'work_waiter':
         if (stats.energy >= 10) {
           setWaiting(true); setWaitingProgress(0); closeModal();
-          let waiterCurrent = 0; clearActiveTasks();
+          let waiterCurrent = 0; 
+          let eventTriggered = false;
+          let activeEventInShift = null;
+
+          clearActiveTasks();
           taskIntervalRef.current = setInterval(() => {
             waiterCurrent += 1;
             const prog = (waiterCurrent / 30) * 100;
+            
+            // 1. Kích hoạt sự kiện giữa ca (tại 50%)
+            if (waiterCurrent === 15 && !eventTriggered) {
+              eventTriggered = true;
+              activeEventInShift = triggerMidShiftEvent(setSystemAlert);
+            }
+
             if (prog >= 100) { 
-              clearActiveTasks(); setWaiting(false); 
-              updateStats({ money: stats.money + 50000, energy: stats.energy - 10 });
-              notify("Hoàn thành ca làm việc! +50.000đ");
+              clearActiveTasks(); 
+              setWaiting(false); 
+              handleFinalShiftEvent(activeEventInShift, stats, notify, setSystemAlert);
             } else {
               setWaitingProgress(prog);
             }
