@@ -9,6 +9,7 @@ import GameLayout from './components/GameLayout';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import { supabase, signInWithGoogle } from './lib/supabaseClient';
+// Removed usePlayerStore as it's consolidated into useGameStore
 
 function App() {
   const taskIntervalRef = React.useRef(null);
@@ -35,7 +36,7 @@ function App() {
     isTutoring, setTutoring, tutoringProgress, setTutoringProgress,
     isWaiting, setWaiting, waitingProgress, setWaitingProgress,
     generateElectricityBill, payElectricityBill, updateElectricityTimer,
-    resetGame
+    resetGame, loadGameData, saveGameData
   } = useGameStore();
 
   const [notifications, setNotifications] = useState([]);
@@ -54,7 +55,6 @@ function App() {
   const [systemAlert, setSystemAlert] = useState(null);
   const [showTutorAlert, setShowTutorAlert] = useState(false);
   const [showShipperAlert, setShowShipperAlert] = useState(false);
-  const [hasReceivedInitialMoney, setHasReceivedInitialMoney] = useState(false);
   const [frame, setFrame] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
 
@@ -85,20 +85,62 @@ function App() {
     };
     checkInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      console.log("DEBUG: Auth State Changed Event:", event, "New Session:", !!s);
-      // Chỉ setSession nếu không phải là event SIGNED_IN (vì handleLoginSuccess đã lo rồi)
-      // Hoặc nếu session thực tế khác với session hiện tại
-      if (s?.user?.id !== sessionRef.current?.user?.id) {
-        setSession(s);
-        sessionRef.current = s;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
+      console.log(`DEBUG: Auth Event: ${event}`);
+      
+      if (s?.user) {
+        // Cập nhật session state
+        if (s.user.id !== sessionRef.current?.user?.id) {
+          setSession(s);
+          sessionRef.current = s;
+        }
+
+        // Chỉ đồng bộ khi SIGNED_IN hoặc khi ID thay đổi
+        if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && s.user.id !== sessionRef.current?.user?.id)) {
+          // Đầu tiên sync profile (full_name, email)
+          const fullName = s.user.user_metadata?.full_name || 'Học viên';
+          const email = s.user.email;
+          
+          const syncProfile = async () => {
+            const { data: existing } = await supabase.from('profiles').select('id').eq('id', s.user.id).maybeSingle();
+            if (!existing) {
+              await supabase.from('profiles').insert({ id: s.user.id, full_name: fullName, email: email, money: 0, sessions_count: 1 });
+            } else {
+              await supabase.from('profiles').update({ full_name: fullName, email: email }).eq('id', s.user.id);
+            }
+            // Sau đó load toàn bộ dữ liệu game
+            await loadGameData(s.user.id);
+          };
+          syncProfile();
+        }
+      } else {
+        setSession(null);
+        sessionRef.current = null;
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Autosave logic: Sync to cloud before tab close/refresh
+  useEffect(() => {
+    const handleBeforeUnload = async (e) => {
+      if (sessionRef.current?.user?.id) {
+        // Since beforeunload is synchronous, we try to trigger a save.
+        // Modern browsers might block long async calls here, 
+        // but we'll attempt it for best effort.
+        saveGameData(sessionRef.current.user.id);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [saveGameData]);
+
   const handleLogout = async () => {
+    if (session?.user?.id) {
+      await saveGameData(session.user.id);
+    }
     await supabase.auth.signOut();
     setSession(null);
     setHasStartedGuestMode(false);
@@ -111,31 +153,17 @@ function App() {
     setShowLogin(false);
     setShowSignUp(false);
 
-    // Fetch profile data (username, full_name) từ bảng profiles
-    if (supabaseSession?.user?.id) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, username')
-        .eq('id', supabaseSession.user.id)
-        .single();
-
-      if (profileError) {
-        console.warn('DEBUG: Không lấy được profile:', profileError.message);
-      } else {
-        console.log('DEBUG: Profile data:', profile);
-        // Merge profile data vào session để UI hiển thị
-        setSession((prev) => ({
-          ...prev,
-          user: {
-            ...prev.user,
-            user_metadata: {
-              ...prev.user.user_metadata,
-              full_name: profile.full_name || prev.user.user_metadata?.full_name,
-              username: profile.username,
-            },
-          },
-        }));
+    if (supabaseSession?.user) {
+      // Sync profile info first
+      const { data: existing } = await supabase.from('profiles').select('id').eq('id', supabaseSession.user.id).maybeSingle();
+      if (!existing) {
+        await supabase.from('profiles').insert({ 
+          id: supabaseSession.user.id, 
+          full_name: supabaseSession.user.user_metadata?.full_name || 'Học viên', 
+          email: supabaseSession.user.email 
+        });
       }
+      await loadGameData(supabaseSession.user.id);
     }
   };
 
@@ -166,23 +194,41 @@ function App() {
     if (!isGameStarted || playerStats.isExpelled || playerStats.isStroke) {
       setShowExhaustedPopup(false); setShowTutorAlert(false); setShowShipperAlert(false);
       setShowPrompt(null); setSystemAlert(null); setTimeLeftToEnroll(5 * 60);
-      setNotifications([]); setHasReceivedInitialMoney(false);
+      setNotifications([]); 
     }
   }, [isGameStarted, playerStats.isExpelled, playerStats.isStroke]);
 
   useEffect(() => {
-    if (isGameStarted && !hasReceivedInitialMoney) {
+    if (isGameStarted && !playerStats.hasReceivedInitialMoney) {
       setSystemAlert({
         type: 'income', title: 'TRỢ CẤP ĐẦU KỲ',
         message: 'Bố mẹ vừa gửi cho bạn 3.000.000đ tiền sinh hoạt phí tháng đầu tiên!',
         onOk: () => {
           const currentState = useGameStore.getState();
-          currentState.updateStats({ money: currentState.stats.money + 3000000 });
+          currentState.updateStats({ 
+            money: currentState.playerStats.money + 3000000,
+            hasReceivedInitialMoney: true 
+          });
+          // Cắm cọc ID vào cloud ngay khi nhận tiền
+          if (sessionRef.current?.user?.id) {
+            currentState.syncToCloud(sessionRef.current.user.id);
+          }
         }
       });
-      setHasReceivedInitialMoney(true);
     }
-  }, [isGameStarted, hasReceivedInitialMoney]);
+  }, [isGameStarted, playerStats.hasReceivedInitialMoney]);
+
+  // Sync to cloud once after successful login/load
+  useEffect(() => {
+    if (session?.user?.id) {
+      console.log("DEBUG: Auto-syncing to cloud after login...");
+      // Thêm một chút delay để đảm bảo session và profile đã load xong
+      const timer = setTimeout(() => {
+        useGameStore.getState().syncToCloud(session.user.id);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [session?.user?.id]);
 
 
 
@@ -324,7 +370,7 @@ function App() {
         state.updateElectricityTimer();
       }
       if (ps.electricityBill.status === 'overdue') {
-        state.updateStats({ energy: Math.max(0, s.energy - 1) });
+        state.updateStats({ energy: Math.max(0, ps.energy - 1) });
       }
 
     }, 1000); // 1 giây thực = 1 tick
@@ -336,7 +382,7 @@ function App() {
     if (!isGameStarted) return;
     const moveLoop = setInterval(() => {
       const state = useGameStore.getState();
-      if (systemAlertRef.current || state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (systemAlertRef.current || state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.playerStats.energy <= 0 || state.currentScene !== 'map') return;
       let moveKey = null;
       if (keys.ArrowUp) moveKey = 'ArrowUp';
       else if (keys.ArrowDown) moveKey = 'ArrowDown';

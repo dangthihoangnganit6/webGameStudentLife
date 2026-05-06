@@ -1,5 +1,6 @@
 import React from 'react';
 import useGameStore from '../store/useGameStore';
+// usePlayerStore removed
 import InteractionModal from './InteractionModal';
 import AttendanceTimer from './AttendanceTimer';
 import CookingOverlay from './CookingOverlay';
@@ -65,6 +66,8 @@ const IMAGE_MAP = {
 };
 
 export default function GameLayout({ appState }) {
+  // player stats and stats are fetched from useGameStore below
+
   // Consolidate all appState destructuring
   const {
     notifications, setNotifications,
@@ -156,10 +159,9 @@ export default function GameLayout({ appState }) {
 
               <div className="flex flex-col mr-2">
                 <span className="text-white font-bold text-sm tracking-tight leading-none group-hover:text-indigo-300 transition-colors">
-                  {session?.user?.user_metadata?.full_name || 'Học viên'}
+                  {playerStats.full_name || session?.user?.user_metadata?.full_name || 'Học viên'}
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest bg-indigo-400/10 px-1.5 py-0.5 rounded">Pro Player</span>
                   <button
                     onClick={handleLogout}
                     className="text-white/30 text-[9px] uppercase tracking-widest font-black hover:text-red-400 transition-colors"
@@ -237,7 +239,7 @@ export default function GameLayout({ appState }) {
                   <img src={background4} alt="icon" className="w-10 h-10 object-contain" />
                 </div>
                 <div className="font-sans font-bold text-base text-[#9333EA]">
-                  Năm {Math.ceil(stats.time.day / 2)} - Học kì {stats.time.day % 2 === 0 ? 2 : 1}
+                  Năm {Math.ceil(playerStats.time.day / 2)} - Học kì {playerStats.time?.day % 2 === 0 ? 2 : 1}
                 </div>
               </div>
 
@@ -247,10 +249,10 @@ export default function GameLayout({ appState }) {
                   <img src={background1} alt="icon" className="w-10 h-10 object-contain" />
                 </div>
                 <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 bg-[#3B82F6] rounded-full" style={{ width: `${stats.energy}%` }}></div>
+                  <div className="absolute left-0 top-0 bottom-0 bg-[#3B82F6] rounded-full" style={{ width: `${playerStats.energy}%` }}></div>
                 </div>
                 <div className="font-sans font-bold text-base text-[#2563EB] whitespace-nowrap">
-                  {stats.energy}%
+                  {playerStats.energy}%
                 </div>
               </div>
 
@@ -260,7 +262,7 @@ export default function GameLayout({ appState }) {
                   <img src={background2} alt="icon" className="w-10 h-10 object-contain" />
                 </div>
                 <div className="font-sans font-bold text-base text-[#16A34A]">
-                  {(stats.money / 1000).toFixed(0)}k
+                  {(playerStats.money / 1000).toFixed(0)}k
                 </div>
               </div>
 
