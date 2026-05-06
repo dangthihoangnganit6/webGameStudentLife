@@ -19,6 +19,7 @@ export default function Login({ onLoginSuccess, onGoogleLogin, onClose, onSignUp
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -304,6 +305,7 @@ export default function Login({ onLoginSuccess, onGoogleLogin, onClose, onSignUp
                   </label>
                   <button
                     type="button"
+                    onClick={() => setShowForgotModal(true)}
                     className="hover:underline"
                     style={{ fontSize: 16, lineHeight: '24px', color: '#004AC6' }}
                   >
@@ -498,6 +500,65 @@ export default function Login({ onLoginSuccess, onGoogleLogin, onClose, onSignUp
           ))}
         </div>
       </footer>
+
+      {/* ─── Humorous Forgot Password Modal ─── */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div 
+            className="w-full max-w-lg bg-white rounded-[24px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+            style={{ fontFamily: 'Manrope, sans-serif' }}
+          >
+            {/* Modal Header */}
+            <div className="bg-slate-50 px-8 py-6 border-b border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Quên mật khẩu hả bạn ei?</h3>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-8 space-y-6">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">1</div>
+                  <p className="text-slate-600 leading-relaxed pt-1">
+                    <span className="font-bold text-slate-900">Phương án 1:</span> Đăng ký bằng Google đi cho đời thanh thản, Google lo hết, tôi không phải giữ chìa khóa giùm bạn.
+                  </p>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center font-bold">2</div>
+                  <p className="text-slate-600 leading-relaxed pt-1">
+                    <span className="font-bold text-slate-900">Phương án 2:</span> Vì chủ thớt còn đang chạy ăn từng bữa (và dùng gói Supabase/Email free), nên phí gửi mail xác nhận là một sự xa xỉ.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 rounded-2xl p-6 text-white italic">
+                <span className="font-bold text-emerald-400 not-italic block mb-1">Kết luận:</span>
+                Quên thì coi như mất acc, tạo cái mới coi như làm lại cuộc đời. Lần sau nhớ dùng Google OAuth nhé! ✌️
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-8 py-6 bg-slate-50 flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowForgotModal(false);
+                  onGoogleLogin?.();
+                }}
+                className="w-full bg-[#006C49] hover:bg-[#005a3d] text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                <GoogleIcon className="w-5 h-5 invert" />
+                Quay lại đăng nhập bằng Google
+              </button>
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold py-3 rounded-xl transition-all"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
