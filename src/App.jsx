@@ -9,6 +9,7 @@ import GameLayout from './components/GameLayout';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import { supabase, signInWithGoogle } from './lib/supabaseClient';
+import { useTutor } from './hooks/useTutor';
 
 function App() {
   const taskIntervalRef = React.useRef(null);
@@ -64,6 +65,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [hasStartedGuestMode, setHasStartedGuestMode] = useState(false);
+  const { triggerMidLessonEvent, handleFinalEvent } = useTutor();
 
   // 1. Khởi tạo State session (mặc định là null)
   const [session, setSession] = useState(null);
@@ -555,14 +557,26 @@ function App() {
       case 'teach_tutor':
         if (stats.energy >= 10) {
           setTutoring(true); setTutoringProgress(0); closeModal();
-          let tutorCurrent = 0; clearActiveTasks();
+          let tutorCurrent = 0; 
+          let eventTriggered = false;
+          let activeEventInLesson = null; 
+          
+          clearActiveTasks();
           taskIntervalRef.current = setInterval(() => {
             tutorCurrent += 1;
             const prog = (tutorCurrent / 30) * 100;
+            
+            // 1. Kích hoạt sự kiện giữa buổi (tại 50%)
+            if (tutorCurrent === 15 && !eventTriggered) {
+              eventTriggered = true;
+              activeEventInLesson = triggerMidLessonEvent(tutorCurrent, setSystemAlert);
+            }
+
+            // 2. Kết thúc buổi học
             if (prog >= 100) { 
-              clearActiveTasks(); setTutoring(false); 
-              updateStats({ money: stats.money + 100000, energy: stats.energy - 10 });
-              notify("Hoàn thành buổi dạy! +100.000đ");
+              clearActiveTasks(); 
+              setTutoring(false); 
+              handleFinalEvent(activeEventInLesson, stats, notify, setSystemAlert);
             } else {
               setTutoringProgress(prog);
             }
