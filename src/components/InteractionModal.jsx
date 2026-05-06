@@ -75,32 +75,6 @@ const InteractionModal = ({
       );
     }
     
-    if (interactionStep === 'ask_shipper') {
-      return (
-        <div className="text-center">
-          <h3 className="text-white font-black text-2xl uppercase mb-4">Xe Ôm Công Nghệ</h3>
-          <div className="text-slate-300 text-lg mb-8 leading-relaxed bg-slate-900/50 block p-6 rounded-2xl border border-white/5 space-y-2">
-            <div>Thu nhập: <span className="text-emerald-400 font-bold">Tuỳ chuyến</span></div>
-            <div>Tiêu tốn: <span className="text-amber-400 font-bold">5 Năng lượng</span>/chuyến</div>
-            <div className="pt-2 mt-2 border-t border-white/10">Phí môi giới: <span className="text-rose-400 font-bold">100.000đ</span></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              onClick={() => onAction('accept_shipper')}
-              className="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm uppercase"
-            >
-              Đóng 100k & Nhận việc
-            </button>
-            <button 
-              onClick={() => setInteractionStep('sub_menu')}
-              className="py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all uppercase"
-            >
-              Không
-            </button>
-          </div>
-        </div>
-      );
-    }
 
     if (interactionStep === 'ask_waiter') {
       return (
@@ -763,11 +737,10 @@ const InteractionModal = ({
 
           <div className="space-y-3">
             {workOptions.map(job => {
-              const isTutor = job.id === 'job_tutor';
-              const isShipper = job.id === 'job_shipper';
-              const isWaiter = job.id === 'job_waiter';
-              const alreadyGotTutor = isTutor && playerStats.hasTutorJob;
-              const alreadyGotWaiter = isWaiter && playerStats.hasWaiterJob;
+            const isTutor = job.id === 'job_tutor';
+            const isWaiter = job.id === 'job_waiter';
+            const alreadyGotTutor = isTutor && playerStats.hasTutorJob;
+            const alreadyGotWaiter = isWaiter && playerStats.hasWaiterJob;
               
               const disabled = alreadyGotTutor || alreadyGotWaiter;
 
@@ -778,8 +751,6 @@ const InteractionModal = ({
                 onClick={() => {
                   if (isTutor && !alreadyGotTutor) {
                     setInteractionStep('ask_tutor');
-                  } else if (isShipper) {
-                    setInteractionStep('ask_shipper');
                   } else if (isWaiter && !alreadyGotWaiter) {
                     setInteractionStep('ask_waiter');
                   } else {

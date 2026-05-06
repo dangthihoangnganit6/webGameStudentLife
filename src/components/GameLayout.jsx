@@ -71,7 +71,6 @@ export default function GameLayout({ appState }) {
     timeLeftToEnroll,
     showExhaustedPopup, handleExhaustedOk,
     showTutorAlert, setShowTutorAlert,
-    showShipperAlert, setShowShipperAlert,
     systemAlert, setSystemAlert,
     showDebug, setShowDebug,
     isGameStarted, setIsGameStarted,
@@ -404,9 +403,9 @@ export default function GameLayout({ appState }) {
                       const playerFeetY = position.y + 50;
 
                       const isOccluded =
-                        playerFeetX > d.x + d.w * 0.25 &&
-                        playerFeetX < d.x + d.w * 0.75 &&
-                        playerFeetY > d.y + d.h * 0.25 &&
+                        playerFeetX > d.x + d.w * 0.17 &&
+                        playerFeetX < d.x + d.w * 0.83 &&
+                        playerFeetY > d.y + d.h * 0.17 &&
                         playerFeetY <= buildingBaseY;
 
                       return (
@@ -424,7 +423,7 @@ export default function GameLayout({ appState }) {
                               transform: tFlip,
                               transformOrigin: 'center',
                               zIndex: isOccluded ? 10000 + Math.floor(buildingBaseY) : Math.floor(buildingBaseY),
-                              opacity: isOccluded ? 0.5 : 1
+                              opacity: isOccluded ? 0.3 : 1
                             }}
                           />
                         </React.Fragment>
@@ -599,23 +598,6 @@ export default function GameLayout({ appState }) {
                 </div>
               )}
 
-              {/* Shipper Alert */}
-              {showShipperAlert && !playerStats.isExpelled && !playerStats.isStroke && (
-                <div className="absolute inset-0 bg-black/80 flex items-center justify-center backdrop-blur-sm pointer-events-auto z-[10500]">
-                  <div className="bg-slate-900 border-2 border-rose-500 p-8 rounded-[32px] max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-500">
-                    <h3 className="text-2xl font-black text-rose-500 uppercase mb-4 tracking-widest">THẤT BẠI</h3>
-                    <p className="text-white text-lg mb-8 leading-relaxed font-bold">
-                      Đăng ký xe ôm công nghệ thành công, nhưng bạn đang không có đủ phương tiện riêng để làm việc!
-                    </p>
-                    <button
-                      onClick={() => setShowShipperAlert(false)}
-                      className="bg-rose-600 hover:bg-rose-500 text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
-                    >
-                      OK
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* Interaction Modal */}
               {isModalOpen && (
@@ -637,8 +619,8 @@ export default function GameLayout({ appState }) {
         </div>
 
         {/* How to Play Section - Full Width */}
-        <div className="flex flex-col items-start p-12 w-full h-[647px] bg-white/30 rounded-xl mt-[80px]">
-          <div className="flex flex-col items-start gap-8 w-full max-w-[1667px] mx-auto">
+        <div className="flex flex-col items-start p-12 w-full min-h-[647px] bg-white/30 rounded-xl mt-[80px]">
+          <div className="flex flex-col items-start gap-8 w-full">
             <div className="font-semibold text-2xl text-[#0B1C30]">Hướng dẫn chơi Student Life</div>
 
             <div className="flex flex-row justify-between items-stretch gap-6 w-full relative">

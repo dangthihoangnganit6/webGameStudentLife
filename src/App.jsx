@@ -53,7 +53,6 @@ function App() {
   const [showExhaustedPopup, setShowExhaustedPopup] = useState(false);
   const [systemAlert, setSystemAlert] = useState(null);
   const [showTutorAlert, setShowTutorAlert] = useState(false);
-  const [showShipperAlert, setShowShipperAlert] = useState(false);
   const [hasReceivedInitialMoney, setHasReceivedInitialMoney] = useState(false);
   const [frame, setFrame] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
@@ -164,7 +163,7 @@ function App() {
 
   useEffect(() => {
     if (!isGameStarted || playerStats.isExpelled || playerStats.isStroke) {
-      setShowExhaustedPopup(false); setShowTutorAlert(false); setShowShipperAlert(false);
+      setShowExhaustedPopup(false); setShowTutorAlert(false);
       setShowPrompt(null); setSystemAlert(null); setTimeLeftToEnroll(5 * 60);
       setNotifications([]); setHasReceivedInitialMoney(false);
     }
@@ -513,20 +512,6 @@ function App() {
           notify("Không đủ tiền phí môi giới (300.000đ)!");
         }
         break;
-      case 'accept_shipper':
-        if (stats.money >= 100000) {
-          if (playerStats.hasBicycle) {
-            updateStats({ money: stats.money - 100000 });
-            updatePlayerStats({ hasShipperJob: true });
-            notify("Đăng ký xe ôm công nghệ thành công!");
-            closeModal();
-          } else {
-             setShowShipperAlert(true);
-          }
-        } else {
-          notify("Không đủ tiền phí môi giới (100.000đ)!");
-        }
-        break;
       case 'buy_food':
       case 'buy_ingredient':
       case 'buy_item':
@@ -592,7 +577,7 @@ function App() {
 
   const commonState = {
     notifications, setNotifications, timeLeftToEnroll, showExhaustedPopup, handleExhaustedOk,
-    showTutorAlert, setShowTutorAlert, showShipperAlert, setShowShipperAlert,
+    showTutorAlert, setShowTutorAlert,
     systemAlert, setSystemAlert, showDebug, setShowDebug, frame, scaleFactor,
     DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef, handleAction, signInWithGoogle, handleLogout
   };
