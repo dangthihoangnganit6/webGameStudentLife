@@ -3,6 +3,16 @@ import { describe, it, expect } from 'vitest';
 import App from '../App';
 import React from 'react';
 
+// Mock ResizeObserver for Node.js/jsdom environment
+global.ResizeObserver = class ResizeObserver {
+  constructor(callback) {
+    this.callback = callback;
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 // Mocks to prevent heavy canvas/image loading errors in jsdom
 vi.mock('../assets/path.png', () => ({ default: 'path.png' }));
 vi.mock('../assets/hospital.png', () => ({ default: 'hospital.png' }));

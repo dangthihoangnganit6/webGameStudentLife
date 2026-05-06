@@ -38,7 +38,7 @@ describe('InteractionModal Logic', () => {
       />
     );
     
-    const yesButton = screen.getByText('Có');
+    const yesButton = screen.getByText('Vào');
     fireEvent.click(yesButton);
     
     expect(setStep).toHaveBeenCalledWith('sub_menu');

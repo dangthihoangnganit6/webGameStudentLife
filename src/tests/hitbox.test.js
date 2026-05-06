@@ -13,8 +13,8 @@ describe('Hệ thống Kiểm thử Game', () => {
       expect(isHit).toBe(true); 
     });
 
-    test('Nhân vật di chuyển tự do ở vùng trống', () => {
-      const pointOutside = { x: 10, y: 10 };
+    test('Nhân vật di chuyển tự do ở vùng trống (Không chạm vật cản)', () => {
+      const pointOutside = { x: 500, y: 500 }; // Một điểm ở giữa đường, thường là trống
       const isHit = OBSTACLE_POLYGONS.some(poly => isPointInPolygon(pointOutside, poly));
       expect(isHit).toBe(false); 
     });
@@ -39,12 +39,19 @@ describe('Hệ thống Kiểm thử Game', () => {
 
   // --- 3. TEST VẬT LÝ CƠ BẢN & BIÊN MAP ---
   describe('Logic Vật lý & Biên bản đồ', () => {
-    test('Chặn nhân vật khi đi quá giới hạn màn hình', () => {
+    test('Phân biệt Chặn Biên (Boundary) và Vật cản (Obstacle)', () => {
       const mapConfig = { WIDTH: 1440, HEIGHT: 1024 };
-      // Test ra ngoài biên phải
-      expect(isWithinBounds(1450, 500, 50, 50, mapConfig)).toBe(false);
-      // Test ở trong biên hợp lệ
-      expect(isWithinBounds(100, 100, 50, 50, mapConfig)).toBe(true);
+      const charSize = { w: 20, h: 50 };
+      
+      // 1. Chặn biên màn hình (isWithinBounds)
+      expect(isWithinBounds(1430, 500, charSize.w, charSize.h, mapConfig)).toBe(false); // Quá biên phải
+      expect(isWithinBounds(100, 100, charSize.w, charSize.h, mapConfig)).toBe(true);  // Trong biên
+      
+      // 2. Chặn vật cản (isPointInPolygon)
+      // Tọa độ này nằm trong một móng nhà cụ thể
+      const pointInObstacle = { x: 200, y: 300 };
+      const isBlockedByObject = OBSTACLE_POLYGONS.some(poly => isPointInPolygon(pointInObstacle, poly));
+      expect(isBlockedByObject).toBe(true);
     });
 
     test('Phát hiện va chạm giữa 2 hình hộp (AABB)', () => {

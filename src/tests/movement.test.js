@@ -17,7 +17,7 @@ describe('Player Isometric Movement & Math Logic', () => {
     // Khi nhấn Down, tọa độ x và y phải thay đổi theo ma trận xoay 30 độ
     const result = calculateNextMove(startPos, 'ArrowDown', speed, bounds, 1);
     
-    // dx=0, dy=4 -> iso_dx = (0-4)*cos(30) ≈ -3.46; iso_dy = (0+4)*sin(30) = 2
+    // dx=0, dy=4 -> iso_dx = (0-4)*cos(30) ≈ -3.464; iso_dy = (0+4)*sin(30) = 2
     expect(result.x).toBeCloseTo(500 - 3.464, 3);
     expect(result.y).toBe(502);
   });

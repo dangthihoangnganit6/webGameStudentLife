@@ -16,25 +16,28 @@ describe('Movement & Collision Logic', () => {
     const initialPos = { x: 200, y: 200 };
     const newPos = calculateNextMove(initialPos, 'ArrowDown', speed, boundaries);
     
-    expect(newPos.x).toBeCloseTo(expectedIsoDown.x);
-    expect(newPos.y).toBe(expectedIsoDown.y);
+    expect(newPos.x).toBeCloseTo(initialPos.x - 3.464, 3);
+    expect(newPos.y).toBe(initialPos.y + 2);
   });
 
-  it('should stop move when colliding with a location (e.g. Hostel at 50,50)', () => {
-    // Hostel is at x: 50, y: 50, width: 120, height: 100
-    // Character is at 170 + 2 (slightly to the right of hostel)
-    // Moving left should collide
+  it('should move character freely near buildings (Hostel area at 50,50)', () => {
+    // Characters should move freely near houses (blur effect)
+    // and only be blocked by foundation polygons (tested in hitbox.test.js)
     const initialPos = { x: 171, y: 60 }; 
     const newPos = calculateNextMove(initialPos, 'ArrowLeft', speed);
     
-    expect(newPos).toEqual(initialPos);
+    // dx = -4, dy = 0 -> iso_dx = -4 * cos(30) = -3.464, iso_dy = -4 * sin(30) = -2
+    expect(newPos.x).toBeCloseTo(initialPos.x - 3.464, 3);
+    expect(newPos.y).toBe(initialPos.y - 2);
   });
 
   it('should move freely when no obstacles are present', () => {
     const initialPos = { x: 400, y: 300 }; // Empty space
     const newPos = calculateNextMove(initialPos, 'ArrowRight', speed);
     
-    expect(newPos).toEqual({ x: 404, y: 300 });
+    // dx = 4, dy = 0 -> iso_dx = 4 * cos(30) = 3.464, iso_dy = 4 * sin(30) = 2
+    expect(newPos.x).toBeCloseTo(initialPos.x + 3.464, 3);
+    expect(newPos.y).toBe(initialPos.y + 2);
   });
 
   test('Vật lý: Tốc độ xe đạp phải nhanh hơn đi bộ', () => {
