@@ -59,6 +59,9 @@ const useGameStore = create((set) => ({
   isWaiting: false,
   waitingProgress: 0,
   
+  isStudying: false,
+  studyProgress: 0,
+  
   // School logic state
   isClassStarting: false,
   nextClassTimer: 0,
@@ -277,6 +280,9 @@ const useGameStore = create((set) => ({
   
   setWaiting: (waiting) => set({ isWaiting: waiting }),
   setWaitingProgress: (progress) => set({ waitingProgress: progress }),
+  
+  setStudying: (studying) => set({ isStudying: studying }),
+  setStudyProgress: (progress) => set({ studyProgress: progress }),
   
   addToInventory: (item) => set((state) => ({
     playerStats: {

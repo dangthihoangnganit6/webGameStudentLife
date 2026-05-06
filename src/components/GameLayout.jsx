@@ -10,6 +10,7 @@ import TermTimer from './TermTimer';
 import ElectricityBillOverlay from './ElectricityBillOverlay';
 import GameOver from './GameOver';
 import WaitingOverlay from './WaitingOverlay';
+import StudyOverlay from './StudyOverlay';
 import StartScreen from './StartScreen';
 import HitboxOverlay from './HitboxOverlay';
 import { X, GraduationCap, Zap, Coins, Clock, User, BookOpen, Briefcase, Heart, Bike } from 'lucide-react';
@@ -91,6 +92,7 @@ export default function GameLayout({ appState }) {
     isHospitalized, hospitalizationProgress,
     isTutoring, tutoringProgress,
     isWaiting, waitingProgress,
+    isStudying, studyProgress,
     payElectricityBill,
     resetGame,
   } = useGameStore();
@@ -369,6 +371,7 @@ export default function GameLayout({ appState }) {
                   {isHospitalized && <HospitalOverlay progress={hospitalizationProgress} />}
                   {isTutoring && <TutoringOverlay progress={tutoringProgress} />}
                   {isWaiting && <WaitingOverlay progress={waitingProgress} />}
+                  {isStudying && <StudyOverlay progress={studyProgress} />}
 
                   <ElectricityBillOverlay
                     bill={playerStats.electricityBill}

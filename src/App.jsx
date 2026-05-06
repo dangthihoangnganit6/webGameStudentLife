@@ -11,6 +11,7 @@ import SignUp from './components/SignUp';
 import { supabase, signInWithGoogle } from './lib/supabaseClient';
 import { useTutor } from './hooks/useTutor';
 import { useServer } from './hooks/useServer';
+import { useClass } from './hooks/useClass';
 
 function App() {
   const taskIntervalRef = React.useRef(null);
@@ -36,6 +37,7 @@ function App() {
     isHospitalized, setHospitalized, hospitalizationProgress, setHospitalizationProgress,
     isTutoring, setTutoring, tutoringProgress, setTutoringProgress,
     isWaiting, setWaiting, waitingProgress, setWaitingProgress,
+    isStudying, setStudying, studyProgress, setStudyProgress,
     generateElectricityBill, payElectricityBill, updateElectricityTimer,
     resetGame
   } = useGameStore();
@@ -68,6 +70,7 @@ function App() {
   const [hasStartedGuestMode, setHasStartedGuestMode] = useState(false);
   const { triggerMidLessonEvent, handleFinalEvent } = useTutor();
   const { triggerMidShiftEvent, handleFinalShiftEvent } = useServer();
+  const { triggerClassEvent, handleFinalClassEvent, startClass } = useClass();
 
   // 1. Khởi tạo State session (mặc định là null)
   const [session, setSession] = useState(null);
@@ -339,7 +342,7 @@ function App() {
     if (!isGameStarted) return;
     const moveLoop = setInterval(() => {
       const state = useGameStore.getState();
-      if (systemAlertRef.current || state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
+      if (systemAlertRef.current || state.isModalOpen || state.isCooking || state.isSleeping || state.isTutoring || state.isWaiting || state.isStudying || state.isHospitalized || state.playerStats.isExpelled || state.playerStats.isStroke || state.stats.energy <= 0 || state.currentScene !== 'map') return;
       let moveKey = null;
       if (keys.ArrowUp) moveKey = 'ArrowUp';
       else if (keys.ArrowDown) moveKey = 'ArrowDown';
@@ -472,19 +475,15 @@ function App() {
         closeModal();
         break;
       case 'check_in':
-        if (isClassStarting) {
-          if (stats.energy >= 20) {
-            updateStats({ energy: stats.energy - 20 });
-            incrementAttendance();
-            setClassStatus(false); // Only 1 check-in per session
-            notify("Điểm danh thành công! +1 buổi học (-20 Năng lượng).");
-            closeModal();
-          } else {
-            notify("Bạn quá mệt để đi học! Hãy nghỉ ngơi trước.");
-          }
-        } else {
-          notify("Chưa đến giờ học hoặc bạn đã điểm danh rồi!");
-        }
+        startClass(
+          setSystemAlert, 
+          notify, 
+          setStudying, 
+          setStudyProgress, 
+          closeModal, 
+          clearActiveTasks, 
+          taskIntervalRef
+        );
         break;
       case 'examine_hospital':
         if (stats.money >= 100000) {
