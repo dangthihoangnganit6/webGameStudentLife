@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import useGameStore from './store/useGameStore';
 import useKeyboard from './hooks/useKeyboard';
-import { calculateNextMove } from './game/movement';
+import { calculateNextMove, Vector3 } from './game/movement';
 import { MAP_CONFIG } from './game/constants';
 import { LOCATIONS } from './data/locations';
 import { OBSTACLE_POLYGONS, INTERACTION_POLYGONS, isPointInPolygon } from './game/hitboxes';
@@ -474,12 +474,47 @@ function App() {
         break;
       case 'pay_electricity_bill': payElectricityBill(); closeModal(); break;
       case 'buy_bicycle':
-        if (stats.money >= 500000) { updateStats({ money: stats.money - 500000 }); updatePlayerStats({ hasBicycle: true, isRidingBicycle: true }); closeModal(); }
+        if (stats.money >= 500000) {
+          const currentPosBuy = Vector3.fromObject(position);
+          const baseOffsetBuy = new Vector3(1.5, 1.5, 0);
+          let safePosBuy = null;
+          
+          for (let i = 10; i <= 50; i += 10) {
+            const nextPos = currentPosBuy.add(new Vector3(baseOffsetBuy.x * i, baseOffsetBuy.y * i, 0)).toObject();
+            const bicyclePts = [-20, -10, 0, 10, 20].map(r => ({ x: nextPos.x + 10 + r * 0.866, y: nextPos.y + 50 + r * 0.5 }));
+            if (!OBSTACLE_POLYGONS.some(polygon => bicyclePts.some(p => isPointInPolygon(p, polygon)))) {
+              safePosBuy = nextPos;
+              break;
+            }
+          }
+          
+          if (safePosBuy) updatePosition(safePosBuy);
+          updateStats({ money: stats.money - 500000 });
+          updatePlayerStats({ hasBicycle: true, isRidingBicycle: true });
+          closeModal();
+        }
         break;
       case 'park_bike':
         if (stats.money >= 10000) { updateStats({ money: stats.money - 10000 }); updatePlayerStats({ isRidingBicycle: false }); closeModal(); }
         break;
-      case 'take_bike': updatePlayerStats({ isRidingBicycle: true }); closeModal(); break;
+      case 'take_bike':
+        const currentPosTake = Vector3.fromObject(position);
+        const baseOffsetTake = new Vector3(1.5, 1.5, 0);
+        let safePosTake = null;
+
+        for (let i = 10; i <= 50; i += 10) {
+          const nextPos = currentPosTake.add(new Vector3(baseOffsetTake.x * i, baseOffsetTake.y * i, 0)).toObject();
+          const bicyclePts = [-20, -10, 0, 10, 20].map(r => ({ x: nextPos.x + 10 + r * 0.866, y: nextPos.y + 50 + r * 0.5 }));
+          if (!OBSTACLE_POLYGONS.some(polygon => bicyclePts.some(p => isPointInPolygon(p, polygon)))) {
+            safePosTake = nextPos;
+            break;
+          }
+        }
+
+        if (safePosTake) updatePosition(safePosTake);
+        updatePlayerStats({ isRidingBicycle: true });
+        closeModal();
+        break;
       case 'pay_hospital_bill':
         const billAmount = playerStats.activeMedicalBill || 0;
         if (stats.money >= billAmount) {

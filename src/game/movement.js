@@ -1,10 +1,28 @@
 /**
+ * Vector3 class for coordinate calculations
+ */
+export class Vector3 {
+  constructor(x = 0, y = 0, z = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  add(other) {
+    return new Vector3(this.x + other.x, this.y + other.y, this.z + other.z);
+  }
+
+  static fromObject(obj) {
+    return new Vector3(obj.x || 0, obj.y || 0, obj.z || 0);
+  }
+
+  toObject() {
+    return { x: this.x, y: this.y };
+  }
+}
+
+/**
  * Calculates the next position based on key input and map constraints
- * @param {Object} currentPos {x, y}
- * @param {String} key ArrowUp, ArrowDown, etc.
- * @param {Number} speed
- * @param {Object} boundaries {width, height}
- * @returns {Object} {x, y}
  */
 export const calculateNextMove = (currentPos, key, speed = 5, boundaries = { width: 1200, height: 800 }, scaleFactor = 1) => {
   let dx = 0;
