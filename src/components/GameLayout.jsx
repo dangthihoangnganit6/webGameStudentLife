@@ -13,7 +13,7 @@ import WaitingOverlay from './WaitingOverlay';
 import StudyOverlay from './StudyOverlay';
 import StartScreen from './StartScreen';
 import HitboxOverlay from './HitboxOverlay';
-import { X, GraduationCap, Zap, Coins, Clock, User, BookOpen, Briefcase, Heart, Bike } from 'lucide-react';
+import { X, GraduationCap, Zap, Coins, Clock, User, BookOpen, Briefcase, Heart, Bike, Settings } from 'lucide-react';
 import { MAP_CONFIG, OBSTACLES } from '../game/constants';
 import { LOCATIONS } from '../data/locations';
 
@@ -137,38 +137,26 @@ export default function GameLayout({ appState }) {
         </div>
         <div className="flex flex-row items-center gap-4">
           {session ? (
-            <div className="group flex items-center gap-4 bg-white/5 pl-1 pr-1 py-1 rounded-full border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer shadow-inner">
-              <div className="relative">
-                <div className="w-10 h-10 rounded-full border-2 border-indigo-400/50 overflow-hidden shadow-md transition-transform group-hover:scale-105">
-                  {session?.user?.user_metadata?.avatar_url ? (
-                    <img
-                      src={session.user.user_metadata.avatar_url}
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white font-black text-lg bg-gradient-to-br from-indigo-500 to-purple-500 uppercase">
-                      {session?.user?.user_metadata?.full_name?.charAt(0) || "U"}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#0F172A] rounded-full shadow-sm"></div>
+            <div className="flex items-center gap-4 bg-white/5 pl-2 pr-4 py-1.5 rounded-full border border-white/10 shadow-inner">
+              <div className="w-9 h-9 rounded-full border border-indigo-400/30 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-black text-base shadow-sm">
+                {session?.user?.user_metadata?.full_name?.charAt(0) || "U"}
               </div>
 
-              <div className="flex flex-col mr-2">
-                <span className="text-white font-bold text-sm tracking-tight leading-none group-hover:text-indigo-300 transition-colors">
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-sm tracking-tight leading-none">
                   {session?.user?.user_metadata?.full_name || 'Học viên'}
                 </span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest bg-indigo-400/10 px-1.5 py-0.5 rounded">Pro Player</span>
-                  <button
-                    onClick={handleLogout}
-                    className="text-white/30 text-[9px] uppercase tracking-widest font-black hover:text-red-400 transition-colors"
-                  >
-                    Thoát
-                  </button>
-                </div>
+                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mt-0.5">Player</span>
               </div>
+
+              <div className="w-px h-6 bg-white/10 mx-1"></div>
+
+              <button
+                onClick={handleLogout}
+                className="text-white/40 hover:text-red-400 text-[11px] font-black uppercase tracking-widest transition-colors px-2"
+              >
+                Thoát
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-4">
@@ -592,7 +580,7 @@ export default function GameLayout({ appState }) {
                       Nhà học sinh ở cạnh nhà bạn!
                     </p>
                     <button
-                      onClick={() => setShowTutorAlert(false)}
+                      onClick={setShowTutorAlert.bind(null, false)}
                       className="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 px-12 rounded-xl text-lg hover:scale-105 transition-all shadow-xl"
                     >
                       OK
@@ -602,7 +590,6 @@ export default function GameLayout({ appState }) {
               )}
 
 
-              {/* Interaction Modal */}
               {isModalOpen && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-[200]">
                   <InteractionModal
@@ -617,6 +604,7 @@ export default function GameLayout({ appState }) {
                   />
                 </div>
               )}
+
             </div>
           </div>
         </div>

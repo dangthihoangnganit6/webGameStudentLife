@@ -88,6 +88,9 @@ function App() {
       const { data: { session: s } } = await supabase.auth.getSession();
       console.log("DEBUG: Initial Session Check:", s);
       setSession(s);
+      if (s?.user?.id) {
+        syncUserProfile(s.user.id);
+      }
     };
     checkInitialSession();
 
@@ -98,6 +101,9 @@ function App() {
       if (s?.user?.id !== sessionRef.current?.user?.id) {
         setSession(s);
         sessionRef.current = s;
+        if (s?.user?.id) {
+          syncUserProfile(s.user.id);
+        }
       }
     });
 
@@ -110,27 +116,23 @@ function App() {
     setHasStartedGuestMode(false);
   };
 
-  const handleLoginSuccess = async (supabaseSession) => {
-    console.log('DEBUG: handleLoginSuccess called with session:', supabaseSession);
-    setSession(supabaseSession);
-    sessionRef.current = supabaseSession;
-    setShowLogin(false);
-    setShowSignUp(false);
+  const syncUserProfile = useCallback(async (userId) => {
+    if (!userId) return;
 
-    // Fetch profile data (username, full_name) từ bảng profiles
-    if (supabaseSession?.user?.id) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, username')
-        .eq('id', supabaseSession.user.id)
-        .single();
+    console.log('DEBUG: Syncing profile for user:', userId);
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, username')
+      .eq('id', userId)
+      .single();
 
-      if (profileError) {
-        console.warn('DEBUG: Không lấy được profile:', profileError.message);
-      } else {
-        console.log('DEBUG: Profile data:', profile);
-        // Merge profile data vào session để UI hiển thị
-        setSession((prev) => ({
+    if (profileError) {
+      console.warn('DEBUG: Không lấy được profile:', profileError.message);
+    } else if (profile) {
+      console.log('DEBUG: Profile data synced:', profile);
+      setSession((prev) => {
+        if (!prev) return prev;
+        return {
           ...prev,
           user: {
             ...prev.user,
@@ -140,9 +142,39 @@ function App() {
               username: profile.username,
             },
           },
-        }));
-      }
+        };
+      });
     }
+  }, []);
+
+  const handleLoginSuccess = async (supabaseSession) => {
+    console.log('DEBUG: handleLoginSuccess called');
+    setSession(supabaseSession);
+    sessionRef.current = supabaseSession;
+    setShowLogin(false);
+    setShowSignUp(false);
+
+    if (supabaseSession?.user?.id) {
+      await syncUserProfile(supabaseSession.user.id);
+    }
+  };
+
+  const handleUpdateUsername = async (newUsername) => {
+    if (!session?.user?.id) return { success: false, error: 'No session' };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: newUsername })
+      .eq('id', session.user.id);
+
+    if (error) {
+      console.error('DEBUG: Update username error:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    await syncUserProfile(session.user.id);
+    notify('Cập nhật tên tài khoản thành công!');
+    return { success: true };
   };
 
   // Resize Observer
@@ -266,7 +298,7 @@ function App() {
             state.setClassStatus(false);
             state.incrementMissed();
             state.updateTimers(intervalSeconds, 0);
-            
+
             const currentState = useGameStore.getState();
             if (currentState.playerStats.missedClasses >= 3) {
               currentState.updatePlayerStats({ isExpelled: true, expulsionReason: 'attendance' });
@@ -452,10 +484,10 @@ function App() {
         const billAmount = playerStats.activeMedicalBill || 0;
         if (stats.money >= billAmount) {
           updateStats({ money: stats.money - billAmount });
-          updatePlayerStats({ 
-            activeMedicalBill: 0, 
+          updatePlayerStats({
+            activeMedicalBill: 0,
             energyBuffTimer: 120, // 2 minutes (120 seconds)
-            isHospitalized: false 
+            isHospitalized: false
           });
           notify("Điều trị thành công! Bạn nhận được 2 phút bảo trì năng lượng.");
           closeModal();
@@ -475,15 +507,7 @@ function App() {
         closeModal();
         break;
       case 'check_in':
-        startClass(
-          setSystemAlert, 
-          notify, 
-          setStudying, 
-          setStudyProgress, 
-          closeModal, 
-          clearActiveTasks, 
-          taskIntervalRef
-        );
+        startClass(setSystemAlert, notify, setStudying, setStudyProgress, closeModal, clearActiveTasks, taskIntervalRef);
         break;
       case 'examine_hospital':
         if (stats.money >= 100000) {
@@ -539,7 +563,7 @@ function App() {
       case 'work_waiter':
         if (stats.energy >= 10) {
           setWaiting(true); setWaitingProgress(0); closeModal();
-          let waiterCurrent = 0; 
+          let waiterCurrent = 0;
           let eventTriggered = false;
           let activeEventInShift = null;
 
@@ -547,16 +571,16 @@ function App() {
           taskIntervalRef.current = setInterval(() => {
             waiterCurrent += 1;
             const prog = (waiterCurrent / 30) * 100;
-            
+
             // 1. Kích hoạt sự kiện giữa ca (tại 50%)
             if (waiterCurrent === 15 && !eventTriggered) {
               eventTriggered = true;
               activeEventInShift = triggerMidShiftEvent(setSystemAlert);
             }
 
-            if (prog >= 100) { 
-              clearActiveTasks(); 
-              setWaiting(false); 
+            if (prog >= 100) {
+              clearActiveTasks();
+              setWaiting(false);
               handleFinalShiftEvent(activeEventInShift, stats, notify, setSystemAlert);
             } else {
               setWaitingProgress(prog);
@@ -569,15 +593,15 @@ function App() {
       case 'teach_tutor':
         if (stats.energy >= 10) {
           setTutoring(true); setTutoringProgress(0); closeModal();
-          let tutorCurrent = 0; 
+          let tutorCurrent = 0;
           let eventTriggered = false;
-          let activeEventInLesson = null; 
-          
+          let activeEventInLesson = null;
+
           clearActiveTasks();
           taskIntervalRef.current = setInterval(() => {
             tutorCurrent += 1;
             const prog = (tutorCurrent / 30) * 100;
-            
+
             // 1. Kích hoạt sự kiện giữa buổi (tại 50%)
             if (tutorCurrent === 15 && !eventTriggered) {
               eventTriggered = true;
@@ -585,9 +609,9 @@ function App() {
             }
 
             // 2. Kết thúc buổi học
-            if (prog >= 100) { 
-              clearActiveTasks(); 
-              setTutoring(false); 
+            if (prog >= 100) {
+              clearActiveTasks();
+              setTutoring(false);
               handleFinalEvent(activeEventInLesson, stats, notify, setSystemAlert);
             } else {
               setTutoringProgress(prog);
@@ -605,7 +629,8 @@ function App() {
     notifications, setNotifications, timeLeftToEnroll, showExhaustedPopup, handleExhaustedOk,
     showTutorAlert, setShowTutorAlert,
     systemAlert, setSystemAlert, showDebug, setShowDebug, frame, scaleFactor,
-    DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef, handleAction, signInWithGoogle, handleLogout
+    DESIGN_WIDTH, DESIGN_HEIGHT, gameContainerRef, handleAction, signInWithGoogle, handleLogout,
+    handleUpdateUsername
   };
 
   // 3. Logic Render:
